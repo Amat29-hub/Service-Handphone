@@ -8,15 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('handphones', function (Blueprint $table) {
             $table->id();
             $table->string('image')->nullable();
-            $table->string('name');
-            $table->text('address')->nullable();
-            $table->string('phonenumber')->nullable();
-            $table->string('email')->unique();
-            $table->string('password');
-            $table->enum('role', ['admin', 'customer', 'technician'])->default('customer');
+            $table->string('brand');
+            $table->string('model');
+            $table->year('release_year')->nullable();
             $table->enum('is_active', ['active', 'nonactive'])->default('active');
             $table->timestamps();
         });
@@ -24,6 +21,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('handphones');
     }
 };
