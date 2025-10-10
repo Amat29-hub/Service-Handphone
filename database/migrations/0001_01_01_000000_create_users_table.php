@@ -10,14 +10,13 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('image')->nullable();
             $table->string('name');
-            $table->text('address')->nullable();
-            $table->string('phonenumber')->nullable();
             $table->string('email')->unique();
             $table->string('password');
-            $table->enum('role', ['admin', 'customer', 'technician'])->default('customer');
-            $table->enum('is_active', ['active', 'nonactive'])->default('active');
+            $table->string('role')->default('user'); // admin/user
+            $table->string('image')->nullable(); // simpan path foto
+            $table->boolean('is_active')->default(true); // aktif/nonaktif
+            $table->rememberToken();
             $table->timestamps();
         });
     }
