@@ -9,7 +9,7 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table text-start align-middle table-bordered table-hover mb-0">
+            <table class="table table-dark text-start align-middle table-bordered table-hover mb-0">
                 <thead>
                     <tr class="text-white">
                         <th>No</th>
@@ -22,19 +22,22 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($handphones as $index => $item)
+                    @forelse ($handphones as $index => $item)
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>
                                 @if($item->image)
-                                    <img src="{{ asset('storage/' . $item->image) }}" alt="Image" width="50" height="50" class="rounded">
+                                    <img src="{{ asset('storage/' . $item->image) }}"
+                                         alt="Image"
+                                         width="50" height="50"
+                                         class="rounded border border-2 border-primary">
                                 @else
                                     <span class="text-muted">No Image</span>
                                 @endif
                             </td>
-                            <td>{{ $item->brand }}</td>
-                            <td>{{ $item->model }}</td>
-                            <td>{{ \Carbon\Carbon::parse($item->release_year)->format('d F Y') }}</td>
+                            <td class="text-white">{{ $item->brand }}</td>
+                            <td class="text-white">{{ $item->model }}</td>
+                            <td class="text-white">{{ \Carbon\Carbon::parse($item->release_year)->format('d F Y') }}</td>
                             <td>
                                 <div class="form-check form-switch d-flex justify-content-center">
                                     <input class="form-check-input bg-primary border-0" type="checkbox" role="switch"
@@ -53,7 +56,11 @@
                                 </form>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center text-white">Tidak ada data handphone.</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -61,7 +68,9 @@
 </div>
 
 <!-- Back to Top -->
-<a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+<a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top">
+    <i class="bi bi-arrow-up"></i>
+</a>
 
 <script>
     function toggleStatus(id) {
@@ -76,4 +85,11 @@
           .catch(error => console.error('Error:', error));
     }
 </script>
+
+<style>
+    /* Tambahan efek hover biar lebih elegan */
+    .table-dark tbody tr:hover {
+        background-color: #343a40 !important;
+    }
+</style>
 @endsection
