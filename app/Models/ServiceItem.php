@@ -4,21 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ServiceItem extends Model
 {
     use HasFactory;
+
+    protected $table = 'serviceitems'; // nama tabel sesuai database kamu
 
     protected $fillable = [
         'service_name',
         'price',
         'is_active',
     ];
-
-    // Relasi ke ServiceDetail
-    public function serviceDetails(): HasMany
-    {
-        return $this->hasMany(ServiceDetail::class);
-    }
 }
