@@ -27,32 +27,17 @@
                     <a href="{{ route('handphone.index') }}" class="dropdown-item text-light {{ request()->is('handphone*') ? 'active' : '' }}">
                         <i class="fa fa-mobile-alt me-2"></i>Handphone
                     </a>
-                    <a href="" class="dropdown-item text-light {{ request()->is('service-item*') ? 'active' : '' }}">
+                    <a href="{{ route('service-item.index') }}" class="dropdown-item text-light {{ request()->is('service-item*') ? 'active' : '' }}">
                         <i class="fa fa-tools me-2"></i>Service Item
                     </a>
                 </div>
             </div>
 
-            <!-- SERVICE DROPDOWN -->
-            @php
-                $isServiceActive = request()->is('service-masuk*') || request()->is('service-proses*') || request()->is('service-selesai*');
-            @endphp
-            <div class="nav-item dropdown {{ $isServiceActive ? 'show' : '' }}">
-                <a href="#" class="nav-link dropdown-toggle {{ $isServiceActive ? 'active show' : '' }}" data-bs-toggle="dropdown">
-                    <i class="fa fa-cogs me-2"></i>Service
-                </a>
-                <div class="dropdown-menu bg-transparent border-0 {{ $isServiceActive ? 'show' : '' }}">
-                    <a href="" class="dropdown-item text-light {{ request()->is('service-masuk*') ? 'active' : '' }}">
-                        <i class="fa fa-inbox me-2"></i>Service Masuk
-                    </a>
-                    <a href="" class="dropdown-item text-light {{ request()->is('service-proses*') ? 'active' : '' }}">
-                        <i class="fa fa-spinner me-2"></i>Service Proses
-                    </a>
-                    <a href="" class="dropdown-item text-light {{ request()->is('service-selesai*') ? 'active' : '' }}">
-                        <i class="fa fa-check-circle me-2"></i>Service Selesai
-                    </a>
-                </div>
-            </div>
+            <!-- SERVICE MENU (bukan dropdown) -->
+            <a href="{{ route('service.index') }}"
+               class="nav-item nav-link {{ request()->is('service*') ? 'active' : '' }}">
+                <i class="fa fa-cogs me-2"></i>Service
+            </a>
         </div>
     </nav>
 </div>

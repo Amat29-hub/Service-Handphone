@@ -29,27 +29,68 @@ class Service extends Model
         'completed_date',
     ];
 
-    // Relasi ke customer (user)
+    protected $casts = [
+        'estimated_cost' => 'decimal:2',
+        'total_cost' => 'decimal:2',
+        'other_cost' => 'decimal:2',
+        'paid' => 'decimal:2',
+        'change' => 'decimal:2',
+        'received_date' => 'datetime',
+        'completed_date' => 'datetime',
+    ];
+
+    /**
+     * Relasi ke customer (User)
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'customer_id');
     }
 
-    // Relasi ke technician (user)
+    /**
+     * Relasi ke teknisi (User)
+     */
     public function technician(): BelongsTo
     {
         return $this->belongsTo(User::class, 'technician_id');
     }
 
-    // Relasi ke handphone
+    /**
+     * Relasi ke Handphone
+     */
     public function handphone(): BelongsTo
     {
         return $this->belongsTo(Handphone::class);
     }
 
-    // Relasi ke service details
-    public function details(): HasMany
+    /**
+     * Relasi ke detail item servis
+     */
+    public function items(): HasMany
     {
         return $this->hasMany(ServiceDetail::class);
+    }
+
+    /**
+     * Status label helper
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'accepted' => 'Diterima',
+            'process' => 'Dalam Proses',
+            'finished' => 'Selesai',
+            'taken' => 'Sudah Diambil',
+            'cancelled' => 'Dibatalkan',
+            default => ucfirst($this->status),
+        };
+    }
+
+    /**
+     * Hitung total keseluruhan biaya (estimated + other_cost)
+     */
+    public function getTotalAmountAttribute(): float
+    {
+        return ($this->estimated_cost ?? 0) + ($this->other_cost ?? 0);
     }
 }
