@@ -10,6 +10,8 @@ class Handphone extends Model
 {
     use HasFactory;
 
+    protected $table = 'handphones'; // nama tabel di database
+
     protected $fillable = [
         'image',
         'brand',

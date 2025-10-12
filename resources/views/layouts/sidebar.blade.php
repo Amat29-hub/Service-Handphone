@@ -14,7 +14,7 @@
 
             <!-- MAIN DATA DROPDOWN -->
             @php
-                $isMainActive = request()->is('users*') || request()->is('handphone*') || request()->is('service-item*');
+                $isMainActive = request()->is('users*') || request()->is('handphone*') || request()->is('serviceitem*');
             @endphp
             <div class="nav-item dropdown {{ $isMainActive ? 'show' : '' }}">
                 <a href="#" class="nav-link dropdown-toggle {{ $isMainActive ? 'active show' : '' }}" data-bs-toggle="dropdown">
@@ -27,7 +27,7 @@
                     <a href="{{ route('handphone.index') }}" class="dropdown-item text-light {{ request()->is('handphone*') ? 'active' : '' }}">
                         <i class="fa fa-mobile-alt me-2"></i>Handphone
                     </a>
-                    <a href="{{ route('service-item.index') }}" class="dropdown-item text-light {{ request()->is('service-item*') ? 'active' : '' }}">
+                    <a href="{{ route('serviceitem.index') }}" class="dropdown-item text-light {{ request()->is('serviceitem*') ? 'active' : '' }}">
                         <i class="fa fa-tools me-2"></i>Service Item
                     </a>
                 </div>

@@ -9,7 +9,7 @@ class ServiceItem extends Model
 {
     use HasFactory;
 
-    protected $table = 'serviceitems'; // nama tabel sesuai database kamu
+    protected $table = 'serviceitems';
 
     protected $fillable = [
         'service_name',
