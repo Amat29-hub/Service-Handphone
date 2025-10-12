@@ -8,12 +8,13 @@ use App\Models\Service;
 use App\Models\Handphone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
     public function index()
     {
-        $users = User::orderBy('created_at', 'desc')->get();
+        $users = User::latest()->get();
         return view('page.backend.user.index', compact('users'));
     }
 
@@ -30,24 +31,20 @@ class UserController extends Controller
             'password' => 'required|min:6',
             'role' => 'required|in:admin,technician,customer',
             'image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
-            'is_active' => 'required|in:0,1', // fix boolean
+            'is_active' => 'required|in:0,1',
         ]);
 
-        // ubah string "1"/"0" jadi integer
-        $validated['is_active'] = $validated['is_active'] == '1' ? 1 : 0;
+        $validated['password'] = Hash::make($validated['password']);
+        $validated['is_active'] = (int) $validated['is_active'];
 
-        // Simpan gambar jika ada
+        // Simpan foto jika ada
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('users', 'public');
         }
 
-        // Hash password
-        $validated['password'] = Hash::make($validated['password']);
-
-        // Buat user baru
         $user = User::create($validated);
 
-        // Buat service otomatis hanya jika role customer
+        // Buat service otomatis jika role customer
         if ($user->role === 'customer') {
             $handphone = Handphone::first();
             if ($handphone) {
@@ -65,7 +62,6 @@ class UserController extends Controller
                     'paymentmethod' => null,
                     'status_paid' => 'unpaid',
                     'received_date' => now(),
-                    'completed_date' => null,
                 ]);
             }
         }
@@ -73,8 +69,9 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.');
     }
 
-    public function show(User $user)
+    public function show($id)
     {
+        $user = User::findOrFail($id);
         return view('page.backend.user.show', compact('user'));
     }
 
@@ -94,16 +91,20 @@ class UserController extends Controller
             'is_active' => 'required|in:0,1',
         ]);
 
-        $validated['is_active'] = $validated['is_active'] == '1' ? 1 : 0;
-
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('users', 'public');
-        }
+        $validated['is_active'] = (int) $validated['is_active'];
 
         if ($request->filled('password')) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
+        }
+
+        // Update foto jika baru di-upload
+        if ($request->hasFile('image')) {
+            if ($user->image && Storage::disk('public')->exists($user->image)) {
+                Storage::disk('public')->delete($user->image);
+            }
+            $validated['image'] = $request->file('image')->store('users', 'public');
         }
 
         $user->update($validated);
@@ -113,9 +114,19 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        if ($user->image && Storage::disk('public')->exists($user->image)) {
+            Storage::disk('public')->delete($user->image);
+        }
+
         Service::where('customer_id', $user->id)->delete();
         $user->delete();
 
-        return redirect()->route('users.index')->with('success', 'User dan data Service terkait berhasil dihapus.');
+        return redirect()->route('users.index')->with('success', 'User berhasil dihapus.');
+    }
+
+    public function toggleStatus(Request $request, User $user)
+    {
+        $user->update(['is_active' => $request->is_active]);
+        return response()->json(['success' => true]);
     }
 }

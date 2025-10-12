@@ -2,56 +2,68 @@
 
 @section('content')
 <div class="container-fluid pt-4 px-4">
-    <h4 class="text-white mb-4 fw-bold">🛠️ Tabel Service Item</h4>
-
-    <div class="bg-secondary text-light rounded p-4 shadow-sm">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h6 class="mb-0 fw-bold">Data Item Service</h6>
-            <a href="{{ route('service-item.create') }}" class="btn btn-primary btn-sm">
-                <i class="fa fa-plus me-1"></i> Tambah Item
+    <div class="bg-secondary text-center rounded p-4 shadow-lg">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h5 class="mb-0 text-white fw-bold">🛠️ Tabel Service Item</h5>
+            <a href="{{ route('serviceitem.create') }}" class="btn btn-danger btn-sm">
+                <i class="bi bi-plus-circle"></i> Tambah
             </a>
         </div>
 
         <div class="table-responsive">
-            <table class="table table-dark table-bordered align-middle text-center mb-0">
-                <thead class="bg-dark text-light">
-                    <tr>
-                        <th>No</th>
-                        <th>Nama Service</th>
-                        <th>Harga</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
+            <table class="table table-dark align-middle text-center mb-0 table-hover"
+                   style="border-collapse: collapse; border: 1px solid #555;">
+                <thead style="background-color: #2b2b2b;">
+                    <tr class="text-white">
+                        <th style="border: 1px solid #555;">No</th>
+                        <th style="border: 1px solid #555;">Nama Service</th>
+                        <th style="border: 1px solid #555;">Harga</th>
+                        <th style="border: 1px solid #555;">Status</th>
+                        <th style="border: 1px solid #555;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($service_items as $item)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ $item->service_name }}</td>
-                            <td>Rp{{ number_format($item->price, 0, ',', '.') }}</td>
-                            <td>
-                                <span class="badge {{ $item->is_active == 'active' ? 'bg-success' : 'bg-danger' }}">
-                                    {{ ucfirst($item->is_active) }}
-                                </span>
+                    @forelse ($serviceitems as $index => $item)
+                        <tr style="border: 1px solid #555;">
+                            <td style="border: 1px solid #555;">{{ $index + 1 }}</td>
+                            <td class="text-white" style="border: 1px solid #555;">{{ $item->service_name }}</td>
+                            <td class="text-white" style="border: 1px solid #555;">Rp{{ number_format($item->price, 0, ',', '.') }}</td>
+                            <td style="border: 1px solid #555;">
+                                <div class="form-check form-switch d-flex justify-content-center">
+                                    <input 
+                                        class="form-check-input bg-primary border-0 toggle-status" 
+                                        type="checkbox"
+                                        id="statusSwitch{{ $item->id }}"
+                                        {{ $item->is_active === 'active' ? 'checked' : '' }}
+                                        onchange="toggleStatus({{ $item->id }})">
+                                </div>
                             </td>
-                            <td>
-                                <a href="{{ route('service-item.show', $item->id) }}" class="btn btn-info btn-sm">
-                                    <i class="fa fa-eye"></i>
-                                </a>
-                                <a href="{{ route('service-item.edit', $item->id) }}" class="btn btn-warning btn-sm">
-                                    <i class="fa fa-edit"></i>
-                                </a>
-                                <form action="{{ route('service-item.destroy', $item->id) }}" method="POST" class="d-inline">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-danger btn-sm" onclick="return confirm('Yakin hapus item ini?')">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                </form>
+                            <td style="border: 1px solid #555;">
+                                <div class="d-flex gap-2 flex-wrap justify-content-center">
+                                    <a href="{{ route('serviceitem.show', $item->id) }}" class="btn btn-info btn-sm flex-fill">
+                                        <i class="bi bi-eye"></i> Detail
+                                    </a>
+                                    <a href="{{ route('serviceitem.edit', $item->id) }}" class="btn btn-warning btn-sm flex-fill">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
+                                    <form action="{{ route('serviceitem.destroy', $item->id) }}" 
+                                          method="POST" 
+                                          class="flex-fill m-0 p-0"
+                                          onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm w-100">
+                                            <i class="bi bi-trash"></i> Hapus
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">Belum ada item service.</td>
+                            <td colspan="5" class="text-center text-white py-3" style="border: 1px solid #555;">
+                                Tidak ada data service item.
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -59,4 +71,70 @@
         </div>
     </div>
 </div>
+
+<!-- Tombol Back to Top -->
+<a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top">
+    <i class="bi bi-arrow-up"></i>
+</a>
+
+<!-- Script toggle status -->
+<script>
+    function toggleStatus(id) {
+        fetch(`{{ url('/serviceitem') }}/${id}/toggle-status`, {
+            method: 'PATCH',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Request gagal!');
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                const toast = document.createElement('div');
+                toast.textContent = '✅ Status berhasil diperbarui!';
+                toast.className = 'toast-msg';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2500);
+            } else {
+                alert('Gagal memperbarui status!');
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            alert('Gagal memperbarui status!');
+        });
+    }
+</script>
+
+<style>
+    /* Efek hover */
+    .table-dark tbody tr:hover {
+        background-color: #2f3337 !important;
+        transition: background-color 0.2s ease;
+    }
+
+    /* Notifikasi kecil */
+    .toast-msg {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #198754;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 6px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        font-size: 14px;
+        animation: fadeInOut 2.5s ease forwards;
+    }
+
+    @keyframes fadeInOut {
+        0% { opacity: 0; transform: translateY(10px); }
+        10%, 90% { opacity: 1; transform: translateY(0); }
+        100% { opacity: 0; transform: translateY(10px); }
+    }
+</style>
 @endsection

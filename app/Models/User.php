@@ -40,4 +40,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Service::class, 'technician_id');
     }
+
+    // === Accessor foto ===
+    public function getImageUrlAttribute()
+    {
+        if ($this->image && file_exists(public_path('storage/' . $this->image))) {
+            return asset('storage/' . $this->image);
+        }
+
+        return asset('images/default-avatar.png');
+    }
 }

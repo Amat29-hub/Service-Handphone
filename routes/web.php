@@ -18,7 +18,9 @@ Route::resource('handphone', HandphoneController::class);
 Route::patch('handphone/{id}/toggle-status', [HandphoneController::class, 'toggleStatus'])->name('handphone.toggle-status');
 
 // Service Item
-Route::resource('service-item', ServiceItemController::class);
+Route::resource('serviceitem', ServiceItemController::class);
+Route::patch('serviceitem/{id}/toggle-status', [ServiceItemController::class, 'toggleStatus'])
+    ->name('serviceitem.toggle-status');
 
 // Service
 Route::resource('service', ServiceController::class);

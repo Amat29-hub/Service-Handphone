@@ -9,16 +9,16 @@ use Illuminate\Http\Request;
 class ServiceItemController extends Controller
 {
     /**
-     * Menampilkan semua data Service Item.
+     * Tampilkan semua service item.
      */
     public function index()
     {
-        $service_items = ServiceItem::orderBy('created_at', 'desc')->get();
-        return view('page.backend.serviceitem.index', compact('service_items'));
+        $serviceitems = ServiceItem::latest()->get();
+        return view('page.backend.serviceitem.index', compact('serviceitems'));
     }
 
     /**
-     * Menampilkan form tambah Service Item.
+     * Form tambah service item.
      */
     public function create()
     {
@@ -26,77 +26,81 @@ class ServiceItemController extends Controller
     }
 
     /**
-     * Menyimpan data Service Item baru ke database.
+     * Simpan data service item baru.
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
+            'service_name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'is_active' => 'required|in:active,nonactive',
+        ]);
+
+        ServiceItem::create($validated);
+
+        return redirect()->route('serviceitem.index')->with('success', 'Service item berhasil ditambahkan.');
+    }
+
+    /**
+     * Tampilkan detail service item.
+     */
+    public function show(ServiceItem $serviceitem)
+    {
+        return view('page.backend.serviceitem.show', compact('serviceitem'));
+    }
+
+    /**
+     * Form edit service item.
+     */
+    public function edit(ServiceItem $serviceitem)
+    {
+        return view('page.backend.serviceitem.edit', compact('serviceitem'));
+    }
+
+    /**
+     * Update data service item.
+     */
+    public function update(Request $request, ServiceItem $serviceitem)
+    {
+        $validated = $request->validate([
             'service_name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'is_active' => 'required|in:active,inactive',
-            'description' => 'nullable|string',
         ]);
 
-        ServiceItem::create([
-            'service_name' => $request->service_name,
-            'price' => $request->price,
-            'is_active' => $request->is_active,
-            'description' => $request->description,
-        ]);
+        $serviceitem->update($validated);
 
-        return redirect()->route('service-item.index')->with('success', 'Service item berhasil ditambahkan!');
+        return redirect()->route('serviceitem.index')->with('success', 'Service item berhasil diperbarui.');
     }
 
     /**
-     * Menampilkan detail Service Item.
+     * Hapus service item.
      */
-    public function show($id)
+    public function destroy(ServiceItem $serviceitem)
     {
-        $service_item = ServiceItem::findOrFail($id);
-        return view('page.backend.serviceitem.show', compact('service_item'));
+        $serviceitem->delete();
+        return redirect()->route('serviceitem.index')->with('success', 'Service item berhasil dihapus.');
     }
 
     /**
-     * Menampilkan form edit Service Item.
+     * Toggle status aktif / tidak aktif.
      */
-    public function edit($id)
+    public function toggleStatus($id)
     {
-        $service_item = ServiceItem::findOrFail($id);
-        return view('page.backend.serviceitem.edit', compact('service_item'));
-    }
-
-    /**
-     * Memperbarui data Service Item.
-     */
-    public function update(Request $request, $id)
-    {
-        $service_item = ServiceItem::findOrFail($id);
-
-        $request->validate([
-            'service_name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'is_active' => 'required|in:active,inactive',
-            'description' => 'nullable|string',
+        $item = \App\Models\ServiceItem::find($id);
+    
+        if (!$item) {
+            return response()->json(['success' => false, 'message' => 'Data tidak ditemukan!'], 404);
+        }
+    
+        // Sesuaikan dengan enum di database
+        $item->is_active = $item->is_active === 'active' ? 'nonactive' : 'active';
+        $item->save();
+    
+        return response()->json([
+            'success' => true,
+            'is_active' => $item->is_active,
+            'message' => 'Status berhasil diperbarui.'
         ]);
-
-        $service_item->update([
-            'service_name' => $request->service_name,
-            'price' => $request->price,
-            'is_active' => $request->is_active,
-            'description' => $request->description,
-        ]);
-
-        return redirect()->route('service-item.index')->with('success', 'Data service item berhasil diperbarui!');
-    }
-
-    /**
-     * Menghapus data Service Item.
-     */
-    public function destroy($id)
-    {
-        $service_item = ServiceItem::findOrFail($id);
-        $service_item->delete();
-
-        return redirect()->route('service-item.index')->with('success', 'Data service item berhasil dihapus!');
     }
 }
