@@ -33,9 +33,9 @@
                 </div>
             </div>
 
-            <!-- SERVICE MENU (bukan dropdown) -->
+            <!-- Service -->
             <a href="{{ route('service.index') }}"
-               class="nav-item nav-link {{ request()->is('service*') ? 'active' : '' }}">
+               class="nav-item nav-link {{ request()->is('service') || request()->is('service/*') ? 'active' : '' }}">
                 <i class="fa fa-cogs me-2"></i>Service
             </a>
         </div>
