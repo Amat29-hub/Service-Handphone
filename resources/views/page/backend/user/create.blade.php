@@ -5,83 +5,66 @@
     <h4 class="text-white mb-4 fw-bold">Tambah User</h4>
 
     <div class="bg-secondary text-light rounded p-4 shadow-sm">
-        <form id="userForm" action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data" novalidate>
+        <a href="{{ route('users.index') }}" class="btn btn-sm btn-primary mb-3">Kembali</a>
+
+        {{-- Error alert --}}
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Nama</label>
-                    <input type="text" name="name" class="form-control bg-dark text-light border-0" required>
-                    <div class="invalid-feedback">Nama wajib diisi.</div>
-                </div>
+            <div class="mb-3">
+                <label for="name" class="form-label">Nama</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required>
+            </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control bg-dark text-light border-0" required>
-                    <div class="invalid-feedback">Email tidak valid.</div>
-                </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required>
+            </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control bg-dark text-light border-0" required minlength="6">
-                    <div class="invalid-feedback">Minimal 6 karakter.</div>
-                </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Role</label>
-                    <select name="role" class="form-select bg-dark text-light border-0" required>
-                        <option value="">-- Pilih Role --</option>
-                        <option value="admin">Admin</option>
-                        <option value="technician">Teknisi</option>
-                        <option value="customer">Pelanggan</option>
-                    </select>
-                    <div class="invalid-feedback">Silakan pilih role.</div>
-                </div>
+            <div class="mb-3">
+                <label for="role" class="form-label">Role</label>
+                <select class="form-select" id="role" name="role" required>
+                    <option value="">-- Pilih Role --</option>
+                    <option value="admin" {{ old('role')=='admin' ? 'selected' : '' }}>Admin</option>
+                    <option value="technician" {{ old('role')=='technician' ? 'selected' : '' }}>Technician</option>
+                    <option value="customer" {{ old('role')=='customer' ? 'selected' : '' }}>Customer</option>
+                </select>
+            </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Status</label>
-                    <select name="is_active" class="form-select bg-dark text-light border-0" required>
-                        <option value="1">Aktif</option>
-                        <option value="0">Nonaktif</option>
-                    </select>
-                </div>
+            <div class="mb-3">
+                <label for="avatar" class="form-label">Foto Profil</label>
+                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+            </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Foto (Opsional)</label>
-                    <input type="file" name="image" id="image" accept="image/*" class="form-control bg-dark text-light border-0">
-                    <img id="preview" class="mt-3 rounded d-none" width="120">
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="is_active" id="active" value="1" {{ old('is_active', '1') == '1' ? 'checked' : '' }}>
+                    <label class="form-check-label" for="active">Active</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="is_active" id="inactive" value="0" {{ old('is_active') == '0' ? 'checked' : '' }}>
+                    <label class="form-check-label" for="inactive">Inactive</label>
                 </div>
             </div>
 
-            <div class="mt-4">
-                <button class="btn btn-primary px-4">Simpan</button>
-                <a href="{{ route('users.index') }}" class="btn btn-secondary">Batal</a>
-            </div>
+            <button type="submit" class="btn btn-success">Simpan User</button>
         </form>
     </div>
 </div>
-
-{{-- Script Preview & Validasi --}}
-<script>
-document.getElementById('image').addEventListener('change', function(e) {
-    const [file] = e.target.files;
-    const preview = document.getElementById('preview');
-    if (file) {
-        preview.src = URL.createObjectURL(file);
-        preview.classList.remove('d-none');
-    }
-});
-
-(() => {
-    'use strict'
-    const form = document.getElementById('userForm')
-    form.addEventListener('submit', event => {
-        if (!form.checkValidity()) {
-            event.preventDefault()
-            event.stopPropagation()
-        }
-        form.classList.add('was-validated')
-    }, false)
-})();
-</script>
 @endsection

@@ -23,31 +23,26 @@
     <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
 
     <style>
-        /* === FIX FOOTER BIAR NEMPEL BAWAH === */
         html, body {
             height: 100%;
             margin: 0;
         }
-
         body {
             display: flex;
             flex-direction: column;
         }
-
         .wrapper {
             flex: 1;
             display: flex;
             flex-direction: row;
             min-height: 100vh;
         }
-
         .content {
             flex: 1;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
-
         footer {
             background: #191C24;
             color: #fff;
@@ -59,13 +54,14 @@
 </head>
 
 <body>
-<!-- Spinner Start -->
-<div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-        <span class="sr-only">Loading...</span>
+    <!-- Spinner Start -->
+    <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
     </div>
-</div>
-<!-- Spinner End -->
+    <!-- Spinner End -->
+
     <div class="wrapper">
         {{-- Sidebar --}}
         @include('layouts.sidebar')
@@ -96,5 +92,8 @@
 
     <!-- Template JS -->
     <script src="{{ asset('assets/js/main.js') }}"></script>
+
+    {{-- Tambahkan ini supaya @push('scripts') dijalankan --}}
+    @stack('scripts')
 </body>
 </html>

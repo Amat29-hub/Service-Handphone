@@ -3,16 +3,17 @@
 @section('content')
 <div class="container-fluid pt-4 px-4">
     <div class="bg-secondary text-white rounded p-4 shadow-lg">
-        <h5 class="mb-4 fw-bold">Tambah Transaksi Service</h5>
+        <h5 class="mb-4 fw-bold">Edit Transaksi Service</h5>
 
-        <form action="{{ route('service.store') }}" method="POST">
+        <form action="{{ route('service.update', $service->id) }}" method="POST">
             @csrf
+            @method('PUT')
 
             <div class="row g-3">
                 {{-- No Invoice --}}
                 <div class="col-md-4">
                     <label class="form-label">No Invoice</label>
-                    <input type="text" name="no_invoice" class="form-control bg-dark text-white" value="{{ $no_invoice }}" readonly>
+                    <input type="text" name="no_invoice" class="form-control bg-dark text-white" value="{{ $service->no_invoice }}" readonly>
                 </div>
 
                 {{-- Pelanggan --}}
@@ -21,7 +22,7 @@
                     <select name="customer_id" class="form-select bg-dark text-white" required>
                         <option value="">-- Pilih Pelanggan --</option>
                         @foreach($customers as $c)
-                            <option value="{{ $c->id }}" {{ old('customer_id') == $c->id ? 'selected' : '' }}>
+                            <option value="{{ $c->id }}" {{ $service->customer_id == $c->id ? 'selected' : '' }}>
                                 {{ $c->name }} ({{ $c->email }})
                             </option>
                         @endforeach
@@ -34,7 +35,7 @@
                     <select name="handphone_id" class="form-select bg-dark text-white" required>
                         <option value="">-- Pilih Handphone --</option>
                         @foreach($handphones as $h)
-                            <option value="{{ $h->id }}" {{ old('handphone_id') == $h->id ? 'selected' : '' }}>
+                            <option value="{{ $h->id }}" {{ $service->handphone_id == $h->id ? 'selected' : '' }}>
                                 {{ $h->brand }} {{ $h->model }}
                             </option>
                         @endforeach
@@ -47,7 +48,7 @@
                     <select name="service_item_id" id="service_item" class="form-select bg-dark text-white" required>
                         <option value="">-- Pilih Service --</option>
                         @foreach($serviceItems as $item)
-                            <option value="{{ $item->id }}" data-cost="{{ $item->price }}" {{ old('service_item_id') == $item->id ? 'selected' : '' }}>
+                            <option value="{{ $item->id }}" data-cost="{{ $item->price }}" {{ $service->service_item_id == $item->id ? 'selected' : '' }}>
                                 {{ $item->service_name }} (Rp {{ number_format($item->price, 0, ',', '.') }})
                             </option>
                         @endforeach
@@ -57,27 +58,27 @@
                 {{-- Biaya Perkiraan (Readonly) --}}
                 <div class="col-md-4">
                     <label class="form-label">Biaya Perkiraan</label>
-                    <input type="number" name="estimated_cost" id="estimated_cost" class="form-control bg-dark text-white" value="{{ old('estimated_cost') }}" readonly>
+                    <input type="number" name="estimated_cost" id="estimated_cost" class="form-control bg-dark text-white" value="{{ $service->estimated_cost }}" readonly>
                 </div>
 
                 {{-- Biaya Lain --}}
                 <div class="col-md-4">
                     <label class="form-label">Biaya Lain</label>
-                    <input type="number" name="other_cost" class="form-control bg-dark text-white" value="{{ old('other_cost') }}">
+                    <input type="number" name="other_cost" class="form-control bg-dark text-white" value="{{ $service->other_cost }}">
                 </div>
 
                 {{-- Deskripsi Kerusakan --}}
                 <div class="col-md-12">
                     <label class="form-label">Deskripsi Kerusakan</label>
-                    <textarea name="damage_description" class="form-control bg-dark text-white" rows="2" required>{{ old('damage_description') }}</textarea>
+                    <textarea name="damage_description" class="form-control bg-dark text-white" rows="2" required>{{ $service->damage_description }}</textarea>
                 </div>
 
                 {{-- Metode Pembayaran --}}
                 <div class="col-md-4">
                     <label class="form-label">Metode Pembayaran</label>
                     <select name="paymentmethod" class="form-select bg-dark text-white" required>
-                        <option value="cash" {{ old('paymentmethod') == 'cash' ? 'selected' : '' }}>Cash</option>
-                        <option value="transfer" {{ old('paymentmethod') == 'transfer' ? 'selected' : '' }}>Transfer</option>
+                        <option value="cash" {{ $service->paymentmethod == 'cash' ? 'selected' : '' }}>Cash</option>
+                        <option value="transfer" {{ $service->paymentmethod == 'transfer' ? 'selected' : '' }}>Transfer</option>
                     </select>
                 </div>
 
@@ -85,11 +86,11 @@
                 <div class="col-md-4">
                     <label class="form-label">Status</label>
                     <select name="status" class="form-select bg-dark text-white" required>
-                        <option value="accepted" {{ old('status') == 'accepted' ? 'selected' : '' }}>Diterima</option>
-                        <option value="process" {{ old('status') == 'process' ? 'selected' : '' }}>Proses</option>
-                        <option value="finished" {{ old('status') == 'finished' ? 'selected' : '' }}>Selesai</option>
-                        <option value="taken" {{ old('status') == 'taken' ? 'selected' : '' }}>Diambil</option>
-                        <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+                        <option value="accepted" {{ $service->status == 'accepted' ? 'selected' : '' }}>Diterima</option>
+                        <option value="process" {{ $service->status == 'process' ? 'selected' : '' }}>Proses</option>
+                        <option value="finished" {{ $service->status == 'finished' ? 'selected' : '' }}>Selesai</option>
+                        <option value="taken" {{ $service->status == 'taken' ? 'selected' : '' }}>Diambil</option>
+                        <option value="cancelled" {{ $service->status == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
                     </select>
                 </div>
 
@@ -97,28 +98,28 @@
                 <div class="col-md-4">
                     <label class="form-label">Status Pembayaran</label>
                     <select name="status_paid" class="form-select bg-dark text-white" required>
-                        <option value="unpaid" {{ old('status_paid') == 'unpaid' ? 'selected' : '' }}>Belum Bayar</option>
-                        <option value="debt" {{ old('status_paid') == 'debt' ? 'selected' : '' }}>Hutang</option>
-                        <option value="paid" {{ old('status_paid') == 'paid' ? 'selected' : '' }}>Lunas</option>
+                        <option value="unpaid" {{ $service->status_paid == 'unpaid' ? 'selected' : '' }}>Belum Bayar</option>
+                        <option value="debt" {{ $service->status_paid == 'debt' ? 'selected' : '' }}>Hutang</option>
+                        <option value="paid" {{ $service->status_paid == 'paid' ? 'selected' : '' }}>Lunas</option>
                     </select>
                 </div>
 
                 {{-- Tanggal Diterima --}}
                 <div class="col-md-4">
                     <label class="form-label">Tanggal Diterima</label>
-                    <input type="date" name="received_date" class="form-control bg-dark text-white" value="{{ old('received_date') ?? date('Y-m-d') }}" required>
+                    <input type="date" name="received_date" class="form-control bg-dark text-white" value="{{ $service->received_date->format('Y-m-d') }}" required>
                 </div>
 
                 {{-- Tanggal Selesai --}}
                 <div class="col-md-4">
                     <label class="form-label">Tanggal Selesai</label>
-                    <input type="date" name="completed_date" class="form-control bg-dark text-white" value="{{ old('completed_date') }}">
+                    <input type="date" name="completed_date" class="form-control bg-dark text-white" value="{{ $service->completed_date?->format('Y-m-d') }}">
                 </div>
 
                 {{-- Dibayar --}}
                 <div class="col-md-4">
                     <label class="form-label">Dibayar</label>
-                    <input type="number" name="paid" class="form-control bg-dark text-white" value="{{ old('paid', 0) }}">
+                    <input type="number" name="paid" class="form-control bg-dark text-white" value="{{ $service->paid }}">
                 </div>
 
                 {{-- Tombol --}}
@@ -144,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
         estimatedCostInput.value = cost;
     });
 
-    // Set default estimated cost jika ada value lama
+    // Set default estimated cost saat load
     if(serviceSelect.value) {
         const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
         estimatedCostInput.value = selectedOption.dataset.cost || 0;
