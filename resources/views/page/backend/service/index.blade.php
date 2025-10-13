@@ -95,12 +95,22 @@
                             {{-- Aksi --}}
                             <td style="border: 1px solid #555;">
                                 <div class="d-flex gap-2 flex-wrap justify-content-center">
+                                    {{-- Detail --}}
                                     <a href="{{ route('service.show', $service->id) }}" class="btn btn-info btn-sm flex-fill">
                                         <i class="bi bi-eye"></i> Detail
                                     </a>
+
+                                    {{-- Edit --}}
                                     <a href="{{ route('service.edit', $service->id) }}" class="btn btn-warning btn-sm flex-fill">
                                         <i class="bi bi-pencil-square"></i> Edit
                                     </a>
+
+                                    {{-- Payment --}}
+                                    <a href="{{ route('service.payment', $service->id) }}" class="btn btn-success btn-sm flex-fill">
+                                        💰 Bayar
+                                    </a>
+
+                                    {{-- Hapus --}}
                                     <form action="{{ route('service.destroy', $service->id) }}" 
                                           method="POST" 
                                           class="flex-fill m-0 p-0"

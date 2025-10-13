@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-fluid pt-4 px-4">
     <div class="bg-secondary text-white rounded p-4 shadow-lg">
-        <h5 class="mb-4 fw-bold">Edit Transaksi Service</h5>
+        <h5 class="mb-4 fw-bold">✏️ Edit Transaksi Service</h5>
 
         <form action="{{ route('service.update', $service->id) }}" method="POST">
             @csrf
@@ -42,7 +42,7 @@
                     </select>
                 </div>
 
-                {{-- Service Item + Biaya Perkiraan --}}
+                {{-- Jenis Service --}}
                 <div class="col-md-4">
                     <label class="form-label">Jenis Service</label>
                     <select name="service_item_id" id="service_item" class="form-select bg-dark text-white" required>
@@ -55,7 +55,7 @@
                     </select>
                 </div>
 
-                {{-- Biaya Perkiraan (Readonly) --}}
+                {{-- Biaya Perkiraan --}}
                 <div class="col-md-4">
                     <label class="form-label">Biaya Perkiraan</label>
                     <input type="number" name="estimated_cost" id="estimated_cost" class="form-control bg-dark text-white" value="{{ $service->estimated_cost }}" readonly>
@@ -79,6 +79,7 @@
                     <select name="paymentmethod" class="form-select bg-dark text-white" required>
                         <option value="cash" {{ $service->paymentmethod == 'cash' ? 'selected' : '' }}>Cash</option>
                         <option value="transfer" {{ $service->paymentmethod == 'transfer' ? 'selected' : '' }}>Transfer</option>
+                        <option value="qris" {{ $service->paymentmethod == 'qris' ? 'selected' : '' }}>QRIS</option>
                     </select>
                 </div>
 
@@ -94,36 +95,38 @@
                     </select>
                 </div>
 
-                {{-- Status Pembayaran --}}
+                {{-- Status Pembayaran (otomatis) --}}
                 <div class="col-md-4">
                     <label class="form-label">Status Pembayaran</label>
-                    <select name="status_paid" class="form-select bg-dark text-white" required>
-                        <option value="unpaid" {{ $service->status_paid == 'unpaid' ? 'selected' : '' }}>Belum Bayar</option>
-                        <option value="debt" {{ $service->status_paid == 'debt' ? 'selected' : '' }}>Hutang</option>
-                        <option value="paid" {{ $service->status_paid == 'paid' ? 'selected' : '' }}>Lunas</option>
-                    </select>
+                    <input type="text" name="status_paid" id="status_paid" class="form-control bg-dark text-white" value="{{ ucfirst($service->status_paid) }}" readonly>
                 </div>
 
                 {{-- Tanggal Diterima --}}
                 <div class="col-md-4">
                     <label class="form-label">Tanggal Diterima</label>
-                    <input type="date" name="received_date" class="form-control bg-dark text-white" value="{{ $service->received_date->format('Y-m-d') }}" required>
+                    <input type="date" name="received_date" class="form-control bg-dark text-white" value="{{ $service->received_date ? $service->received_date->format('Y-m-d') : now()->format('Y-m-d') }}" required>
                 </div>
 
                 {{-- Tanggal Selesai --}}
                 <div class="col-md-4">
                     <label class="form-label">Tanggal Selesai</label>
-                    <input type="date" name="completed_date" class="form-control bg-dark text-white" value="{{ $service->completed_date?->format('Y-m-d') }}">
+                    <input type="date" name="completed_date" class="form-control bg-dark text-white" value="{{ $service->completed_date ? $service->completed_date->format('Y-m-d') : '' }}">
                 </div>
 
                 {{-- Dibayar --}}
                 <div class="col-md-4">
-                    <label class="form-label">Dibayar</label>
-                    <input type="number" name="paid" class="form-control bg-dark text-white" value="{{ $service->paid }}">
+                    <label class="form-label">Dibayar (Rp)</label>
+                    <input type="number" name="paid" id="paid" class="form-control bg-dark text-white" value="{{ $service->paid ?? 0 }}">
+                </div>
+
+                {{-- Total Biaya --}}
+                <div class="col-md-4">
+                    <label class="form-label">Total Biaya (Rp)</label>
+                    <input type="number" id="total_cost" class="form-control bg-dark text-white" value="{{ $service->total_cost }}" readonly>
                 </div>
 
                 {{-- Tombol --}}
-                <div class="col-12 text-end">
+                <div class="col-12 text-end mt-3">
                     <button type="submit" class="btn btn-success px-4">💾 Simpan</button>
                     <a href="{{ route('service.index') }}" class="btn btn-danger px-4">Batal</a>
                 </div>
@@ -132,24 +135,44 @@
     </div>
 </div>
 
-{{-- Script untuk update estimated_cost otomatis --}}
+{{-- Script otomatis update biaya & status bayar --}}
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const serviceSelect = document.getElementById('service_item');
     const estimatedCostInput = document.getElementById('estimated_cost');
+    const otherCostInput = document.querySelector('[name="other_cost"]');
+    const paidInput = document.getElementById('paid');
+    const totalCostInput = document.getElementById('total_cost');
+    const statusPaidInput = document.getElementById('status_paid');
+
+    function updateTotalAndStatus() {
+        const estimated = parseFloat(estimatedCostInput.value) || 0;
+        const other = parseFloat(otherCostInput.value) || 0;
+        const paid = parseFloat(paidInput.value) || 0;
+        const total = estimated + other;
+
+        totalCostInput.value = total;
+
+        if (paid <= 0) {
+            statusPaidInput.value = 'Unpaid';
+        } else if (paid < total) {
+            statusPaidInput.value = 'Debt';
+        } else {
+            statusPaidInput.value = 'Paid';
+        }
+    }
 
     serviceSelect.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        const cost = selectedOption.dataset.cost || 0;
+        const cost = this.options[this.selectedIndex].dataset.cost || 0;
         estimatedCostInput.value = cost;
+        updateTotalAndStatus();
     });
 
-    // Set default estimated cost saat load
-    if(serviceSelect.value) {
-        const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-        estimatedCostInput.value = selectedOption.dataset.cost || 0;
-    }
+    otherCostInput.addEventListener('input', updateTotalAndStatus);
+    paidInput.addEventListener('input', updateTotalAndStatus);
+
+    updateTotalAndStatus();
 });
 </script>
 @endpush

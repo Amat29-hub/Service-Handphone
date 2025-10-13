@@ -19,8 +19,9 @@ Route::patch('handphone/{id}/toggle-status', [HandphoneController::class, 'toggl
 
 // Service Item
 Route::resource('serviceitem', ServiceItemController::class);
-Route::patch('serviceitem/{id}/toggle-status', [ServiceItemController::class, 'toggleStatus'])
-    ->name('serviceitem.toggle-status');
+Route::patch('serviceitem/{id}/toggle-status', [ServiceItemController::class, 'toggleStatus'])->name('serviceitem.toggle-status');
 
 // Service
 Route::resource('service', ServiceController::class);
+Route::get('/service/{id}/payment', [ServiceController::class, 'payment'])->name('service.payment');
+Route::post('/service/{id}/payment', [ServiceController::class, 'processPayment'])->name('service.payment.process');
