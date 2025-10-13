@@ -16,7 +16,7 @@
                 <h6 class="fw-bold text-primary mb-3">🧾 Informasi Service</h6>
                 <div class="row">
                     <div class="col-md-6 mb-2"><strong>No. Invoice:</strong> {{ $service->no_invoice }}</div>
-                    <div class="col-md-6 mb-2"><strong>Nama Pelanggan:</strong> {{ $service->customer->name ?? '-' }}</div>
+                    <div class="col-md-6 mb-2"><strong>Pelanggan:</strong> {{ $service->customer->name ?? '-' }}</div>
                     <div class="col-md-6 mb-2"><strong>Handphone:</strong> {{ $service->handphone->brand ?? '-' }} {{ $service->handphone->type ?? '' }}</div>
                     <div class="col-md-6 mb-2"><strong>Kerusakan:</strong> {{ $service->damage_description }}</div>
                     <div class="col-md-6 mb-2"><strong>Tanggal Diterima:</strong> {{ \Carbon\Carbon::parse($service->received_date)->format('d/m/Y') }}</div>
@@ -51,13 +51,12 @@
                     <div class="mb-3">
                         <label for="paid" class="form-label fw-bold">Nominal Pembayaran Baru (Rp)</label>
                         <input type="number" name="paid" id="paid" class="form-control bg-secondary text-white border-0" placeholder="Masukkan jumlah pembayaran" required>
-                        <small class="text-warning">*Masukkan nominal tambahan pembayaran.</small>
                     </div>
 
                     <div class="mb-3">
                         <label for="paymentmethod" class="form-label fw-bold">Metode Pembayaran</label>
                         <select name="paymentmethod" id="paymentmethod" class="form-select bg-secondary text-white border-0">
-                            <option value="cash" selected>Cash</option>
+                            <option value="cash">Cash</option>
                             <option value="transfer">Transfer</option>
                             <option value="qris">QRIS</option>
                         </select>
@@ -77,10 +76,6 @@
                         <button type="submit" class="btn btn-success px-4 fw-bold">
                             <i class="fa fa-check-circle me-2"></i> Proses Pembayaran
                         </button>
-
-                        <button type="button" id="btnPrint" class="btn btn-primary px-4 fw-bold">
-                            <i class="fa fa-print me-2"></i> Cetak Struk
-                        </button>
                     </div>
                 </div>
             </div>
@@ -91,7 +86,7 @@
 {{-- Template Struk --}}
 <div id="printArea" style="display:none;">
     <div style="font-family: monospace; width: 300px; margin: auto;">
-        <h3 style="text-align:center;">📱 Service Handphone</h3>
+        <h3 style="text-align:center;">📱 SERVICE HANDPHONE</h3>
         <p style="text-align:center;">==============================</p>
         <p><strong>No.Invoice:</strong> {{ $service->no_invoice }}</p>
         <p><strong>Pelanggan:</strong> {{ $service->customer->name ?? '-' }}</p>

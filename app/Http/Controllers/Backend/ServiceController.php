@@ -8,53 +8,58 @@ use App\Models\Service;
 use App\Models\User;
 use App\Models\Handphone;
 use App\Models\ServiceItem;
-use Carbon\Carbon;
+use PDF;
 
 class ServiceController extends Controller
 {
     public function index()
     {
-        $services = Service::with(['customer', 'handphone'])->latest()->get();
+        $services = Service::with(['customer', 'handphone', 'serviceItem'])->latest()->get();
         return view('page.backend.service.index', compact('services'));
     }
 
     public function create()
     {
+        $lastService = Service::latest('id')->first();
+        $no_invoice = 'INV-' . str_pad(($lastService->id ?? 0) + 1, 5, '0', STR_PAD_LEFT);
+
         $customers = User::where('role', 'customer')->get();
         $handphones = Handphone::all();
         $serviceItems = ServiceItem::all();
-        return view('page.backend.service.create', compact('customers', 'handphones', 'serviceItems'));
+
+        return view('page.backend.service.create', compact('no_invoice', 'customers', 'handphones', 'serviceItems'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'customer_id' => 'required',
-            'handphone_id' => 'required',
-            'service_item_id' => 'required',
-            'damage_description' => 'required',
-            'estimated_cost' => 'nullable|numeric',
+        $validated = $request->validate([
+            'no_invoice' => 'required|string',
+            'customer_id' => 'required|integer',
+            'handphone_id' => 'required|integer',
+            'service_item_id' => 'required|integer',
+            'damage_description' => 'required|string',
+            'estimated_cost' => 'required|numeric',
             'other_cost' => 'nullable|numeric',
+            'paymentmethod' => 'required|string',
+            'status' => 'required|string',
+            'received_date' => 'nullable|date',
+            'completed_date' => 'nullable|date',
         ]);
 
-        $total = ($request->estimated_cost ?? 0) + ($request->other_cost ?? 0);
+        $validated['other_cost'] = $validated['other_cost'] ?? 0;
+        $validated['status_paid'] = 'unpaid';
+        $validated['paid'] = 0;
+        $validated['total_cost'] = $validated['estimated_cost'] + $validated['other_cost'];
 
-        Service::create([
-            'no_invoice' => 'INV-' . time(),
-            'customer_id' => $request->customer_id,
-            'handphone_id' => $request->handphone_id,
-            'service_item_id' => $request->service_item_id,
-            'damage_description' => $request->damage_description,
-            'estimated_cost' => $request->estimated_cost ?? 0,
-            'other_cost' => $request->other_cost ?? 0,
-            'total_cost' => $total,
-            'paymentmethod' => $request->paymentmethod ?? 'cash',
-            'status' => $request->status ?? 'accepted',
-            'status_paid' => 'unpaid',
-            'received_date' => $request->received_date ?? Carbon::now(),
-        ]);
+        Service::create($validated);
 
-        return redirect()->route('service.index')->with('success', 'Transaksi berhasil ditambahkan!');
+        return redirect()->route('service.index')->with('success', 'Transaksi service berhasil ditambahkan!');
+    }
+
+    public function show($id)
+    {
+        $service = Service::with(['customer', 'handphone', 'serviceItem'])->findOrFail($id);
+        return view('page.backend.service.show', compact('service'));
     }
 
     public function edit($id)
@@ -71,61 +76,34 @@ class ServiceController extends Controller
     {
         $service = Service::findOrFail($id);
 
-        $request->validate([
-            'customer_id' => 'required',
-            'handphone_id' => 'required',
-            'service_item_id' => 'required',
-            'damage_description' => 'required',
-            'estimated_cost' => 'nullable|numeric',
+        $validated = $request->validate([
+            'customer_id' => 'required|integer',
+            'handphone_id' => 'required|integer',
+            'service_item_id' => 'required|integer',
+            'damage_description' => 'required|string',
+            'estimated_cost' => 'required|numeric',
             'other_cost' => 'nullable|numeric',
-            'paid' => 'nullable|numeric',
+            'paymentmethod' => 'required|string',
+            'status' => 'required|string',
+            'received_date' => 'nullable|date',
+            'completed_date' => 'nullable|date',
         ]);
 
-        $estimated = $request->estimated_cost ?? 0;
-        $other = $request->other_cost ?? 0;
-        $total = $estimated + $other;
-        $paid = $request->paid ?? 0;
+        $validated['other_cost'] = $validated['other_cost'] ?? 0;
+        $validated['total_cost'] = $validated['estimated_cost'] + $validated['other_cost'];
 
-        // Tentukan status pembayaran otomatis
-        if ($paid <= 0) {
-            $statusPaid = 'unpaid';
-        } elseif ($paid < $total) {
-            $statusPaid = 'debt';
-        } else {
-            $statusPaid = 'paid';
-        }
+        $service->update($validated);
 
-        // Hitung kembalian
-        $change = $paid > $total ? ($paid - $total) : 0;
-
-        $service->update([
-            'customer_id' => $request->customer_id,
-            'handphone_id' => $request->handphone_id,
-            'service_item_id' => $request->service_item_id,
-            'damage_description' => $request->damage_description,
-            'estimated_cost' => $estimated,
-            'other_cost' => $other,
-            'total_cost' => $total,
-            'paid' => $paid,
-            'change' => $change,
-            'paymentmethod' => $request->paymentmethod,
-            'status' => $request->status,
-            'status_paid' => $statusPaid,
-            'received_date' => $request->received_date,
-            'completed_date' => $request->completed_date,
-        ]);
-
-        return redirect()->route('service.index')->with('success', 'Transaksi berhasil diperbarui!');
+        return redirect()->route('service.index')->with('success', 'Data service berhasil diperbarui!');
     }
 
     public function destroy($id)
     {
         $service = Service::findOrFail($id);
         $service->delete();
-        return redirect()->route('service.index')->with('success', 'Data berhasil dihapus!');
+        return redirect()->route('service.index')->with('success', 'Data service berhasil dihapus!');
     }
 
-    // Halaman pembayaran
     public function payment($id)
     {
         $service = Service::findOrFail($id);
@@ -135,26 +113,30 @@ class ServiceController extends Controller
     public function processPayment(Request $request, $id)
     {
         $service = Service::findOrFail($id);
-    
-        $paidBaru = $request->paid ?? 0;
-        $total = $service->total_cost ?? 0;
-        $paidTotal = $service->paid + $paidBaru; // total keseluruhan
-        $change = $paidTotal > $total ? $paidTotal - $total : 0;
-    
-        if ($paidTotal <= 0) {
-            $statusPaid = 'unpaid';
-        } elseif ($paidTotal < $total) {
-            $statusPaid = 'debt';
-        } else {
-            $statusPaid = 'paid';
-        }
-    
-        $service->update([
-            'paid' => $paidTotal,
-            'change' => $change,
-            'status_paid' => $statusPaid,
+
+        $validated = $request->validate([
+            'amount_paid' => 'required|numeric|min:0',
         ]);
-    
-        return redirect()->route('service.index')->with('success', 'Pembayaran berhasil diperbarui!');
+
+        $service->paid += $validated['amount_paid'];
+
+        if ($service->paid >= $service->total_cost) {
+            $service->status_paid = 'paid';
+        } elseif ($service->paid > 0) {
+            $service->status_paid = 'debt';
+        } else {
+            $service->status_paid = 'unpaid';
+        }
+
+        $service->save();
+
+        return redirect()->route('service.index')->with('success', 'Pembayaran berhasil diproses!');
+    }
+
+    // CETAK STRUK SERVICE
+    public function cetakStruk($id)
+    {
+        $service = Service::with(['customer', 'handphone', 'serviceItem'])->findOrFail($id);
+        return view('page.backend.service.struk', compact('service'));
     }
 }

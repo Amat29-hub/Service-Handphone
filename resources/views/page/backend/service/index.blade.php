@@ -18,15 +18,9 @@
                         <th style="border: 1px solid #555;">No</th>
                         <th style="border: 1px solid #555;">No Invoice</th>
                         <th style="border: 1px solid #555;">Pelanggan</th>
-                        <th style="border: 1px solid #555;">Email</th>
-                        <th style="border: 1px solid #555;">Handphone</th>
                         <th style="border: 1px solid #555;">Jenis Service</th>
-                        <th style="border: 1px solid #555;">Harga Perkiraan</th>
                         <th style="border: 1px solid #555;">Status</th>
                         <th style="border: 1px solid #555;">Status Bayar</th>
-                        <th style="border: 1px solid #555;">Metode</th>
-                        <th style="border: 1px solid #555;">Diterima</th>
-                        <th style="border: 1px solid #555;">Selesai</th>
                         <th style="border: 1px solid #555;">Total Biaya</th>
                         <th style="border: 1px solid #555;">Aksi</th>
                     </tr>
@@ -35,21 +29,16 @@
                     @forelse ($services as $index => $service)
                         <tr style="border: 1px solid #555;">
                             <td style="border: 1px solid #555;">{{ $index + 1 }}</td>
-                            <td class="fw-bold text-info" style="border: 1px solid #555;">{{ $service->no_invoice }}</td>
-
-                            {{-- Pelanggan --}}
-                            <td class="text-white" style="border: 1px solid #555;">{{ $service->customer->name ?? '-' }}</td>
-                            <td class="text-white" style="border: 1px solid #555;">{{ $service->customer->email ?? '-' }}</td>
-
-                            {{-- Handphone --}}
-                            <td class="text-white" style="border: 1px solid #555;">
-                                {{ $service->handphone->brand ?? '' }} {{ $service->handphone->model ?? '' }}
+                            <td class="fw-bold text-info" style="border: 1px solid #555;">
+                                {{ $service->no_invoice }}
                             </td>
 
-                            {{-- Jenis Service --}}
-                            <td class="text-white" style="border: 1px solid #555;">{{ $service->serviceItem->service_name ?? '-' }}</td>
                             <td class="text-white" style="border: 1px solid #555;">
-                                Rp{{ number_format($service->serviceItem->price ?? 0, 0, ',', '.') }}
+                                {{ $service->customer->name ?? '-' }}
+                            </td>
+
+                            <td class="text-white" style="border: 1px solid #555;">
+                                {{ $service->serviceItem->service_name ?? '-' }}
                             </td>
 
                             {{-- Status --}}
@@ -63,7 +52,9 @@
                                         'cancelled' => 'danger',
                                     ][$service->status] ?? 'secondary';
                                 @endphp
-                                <span class="badge bg-{{ $statusColor }}">{{ ucfirst($service->status) }}</span>
+                                <span class="badge bg-{{ $statusColor }}">
+                                    {{ ucfirst($service->status) }}
+                                </span>
                             </td>
 
                             {{-- Status Bayar --}}
@@ -76,17 +67,6 @@
                                 </span>
                             </td>
 
-                            {{-- Metode --}}
-                            <td class="text-white" style="border: 1px solid #555;">{{ ucfirst($service->paymentmethod) }}</td>
-
-                            {{-- Tanggal --}}
-                            <td class="text-white" style="border: 1px solid #555;">
-                                {{ \Carbon\Carbon::parse($service->received_date)->translatedFormat('d M Y') }}
-                            </td>
-                            <td class="text-white" style="border: 1px solid #555;">
-                                {{ $service->completed_date ? \Carbon\Carbon::parse($service->completed_date)->translatedFormat('d M Y') : '-' }}
-                            </td>
-
                             {{-- Total --}}
                             <td class="fw-bold text-success" style="border: 1px solid #555;">
                                 Rp{{ number_format($service->total_cost ?? 0, 0, ',', '.') }}
@@ -96,17 +76,14 @@
                             <td style="border: 1px solid #555;">
                                 <div class="d-flex gap-2 flex-wrap justify-content-center">
                                     {{-- Detail --}}
-                                    <a href="{{ route('service.show', $service->id) }}" class="btn btn-info btn-sm flex-fill">
+                                    <a href="{{ route('service.show', $service->id) }}" 
+                                       class="btn btn-info btn-sm flex-fill">
                                         <i class="bi bi-eye"></i> Detail
                                     </a>
 
-                                    {{-- Edit --}}
-                                    <a href="{{ route('service.edit', $service->id) }}" class="btn btn-warning btn-sm flex-fill">
-                                        <i class="bi bi-pencil-square"></i> Edit
-                                    </a>
-
                                     {{-- Payment --}}
-                                    <a href="{{ route('service.payment', $service->id) }}" class="btn btn-success btn-sm flex-fill">
+                                    <a href="{{ route('service.payment', $service->id) }}" 
+                                       class="btn btn-success btn-sm flex-fill">
                                         💰 Bayar
                                     </a>
 
@@ -126,7 +103,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="14" class="text-center text-white py-3" style="border: 1px solid #555;">
+                            <td colspan="8" class="text-center text-white py-3" style="border: 1px solid #555;">
                                 Belum ada data transaksi service.
                             </td>
                         </tr>
@@ -148,7 +125,6 @@
         transition: background-color 0.2s ease;
     }
 
-    /* Tombol Back to Top */
     .back-to-top {
         position: fixed;
         bottom: 25px;
@@ -162,11 +138,7 @@
     // Animasi tombol back-to-top
     window.addEventListener('scroll', function() {
         const backToTop = document.querySelector('.back-to-top');
-        if (window.scrollY > 300) {
-            backToTop.style.display = 'block';
-        } else {
-            backToTop.style.display = 'none';
-        }
+        backToTop.style.display = window.scrollY > 300 ? 'block' : 'none';
     });
 </script>
 @endsection

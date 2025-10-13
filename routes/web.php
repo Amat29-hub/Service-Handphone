@@ -25,3 +25,4 @@ Route::patch('serviceitem/{id}/toggle-status', [ServiceItemController::class, 't
 Route::resource('service', ServiceController::class);
 Route::get('/service/{id}/payment', [ServiceController::class, 'payment'])->name('service.payment');
 Route::post('/service/{id}/payment', [ServiceController::class, 'processPayment'])->name('service.payment.process');
+Route::get('/service/{id}/struk', [ServiceController::class, 'cetakStruk'])->name('service.cetakStruk');
