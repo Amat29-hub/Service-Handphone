@@ -2,132 +2,30 @@
 
 @section('content')
 <div class="container-fluid pt-4 px-4">
-    <div class="bg-secondary text-white rounded p-4 shadow-lg mx-auto" style="max-width: 900px;">
-        <h4 class="fw-bold mb-4 text-center">📄 Detail Transaksi Service</h4>
+    <div class="bg-secondary text-light rounded p-4">
+        <h4 class="fw-bold mb-4">Detail Service</h4>
 
-        <div class="row g-3">
-            {{-- No Invoice --}}
-            <div class="col-md-4">
-                <h6 class="text-muted mb-1">No Invoice</h6>
-                <p class="fw-semibold text-info">{{ $service->no_invoice }}</p>
-            </div>
+        <table class="table table-dark table-striped">
+            <tr><th>No Invoice</th><td>{{ $service->no_invoice }}</td></tr>
+            <tr><th>Pelanggan</th><td>{{ $service->customer->name ?? '-' }}</td></tr>
+            <tr><th>Handphone</th><td>{{ $service->handphone->brand ?? '-' }} - {{ $service->handphone->type ?? '-' }}</td></tr>
+            <tr><th>Jenis Servis</th><td>{{ $service->serviceItem->service_name ?? '-' }}</td></tr>
+            <tr><th>Deskripsi Kerusakan</th><td>{{ $service->damage_description }}</td></tr>
+            <tr><th>Estimasi Biaya</th><td>Rp{{ number_format($service->estimated_cost, 0, ',', '.') }}</td></tr>
+            <tr><th>Biaya Lain</th><td>Rp{{ number_format($service->other_cost, 0, ',', '.') }}</td></tr>
+            <tr><th>Total</th><td>Rp{{ number_format($service->total_cost, 0, ',', '.') }}</td></tr>
+            <tr><th>Status Servis</th><td><span class="badge bg-info">{{ $service->status }}</span></td></tr>
+            <tr><th>Status Pembayaran</th><td><span class="badge bg-warning">{{ $service->status_paid }}</span></td></tr>
+            <tr><th>Tanggal Diterima</th><td>{{ $service->received_date }}</td></tr>
+            <tr><th>Tanggal Selesai</th><td>{{ $service->completed_date }}</td></tr>
+        </table>
 
-            {{-- Pelanggan --}}
-            <div class="col-md-4">
-                <h6 class="text-muted mb-1">Pelanggan</h6>
-                <p class="fw-semibold">{{ $service->customer->name ?? '-' }}</p>
-            </div>
-
-            {{-- Handphone --}}
-            <div class="col-md-4">
-                <h6 class="text-muted mb-1">Handphone</h6>
-                <p class="fw-semibold">
-                    {{ $service->handphone->brand ?? '' }} {{ $service->handphone->model ?? '' }}
-                </p>
-            </div>
-
-            {{-- Jenis Service --}}
-            <div class="col-md-4">
-                <h6 class="text-muted mb-1">Jenis Service</h6>
-                <p class="fw-semibold">{{ $service->serviceItem->service_name ?? '-' }}</p>
-            </div>
-
-            {{-- Biaya Perkiraan --}}
-            <div class="col-md-4">
-                <h6 class="text-muted mb-1">Biaya Perkiraan</h6>
-                <p class="fw-semibold">Rp {{ number_format($service->estimated_cost, 0, ',', '.') }}</p>
-            </div>
-
-            {{-- Biaya Lain --}}
-            <div class="col-md-4">
-                <h6 class="text-muted mb-1">Biaya Lain</h6>
-                <p class="fw-semibold">Rp {{ number_format($service->other_cost ?? 0, 0, ',', '.') }}</p>
-            </div>
-
-            {{-- Deskripsi Kerusakan --}}
-            <div class="col-md-12">
-                <h6 class="text-muted mb-1">Deskripsi Kerusakan</h6>
-                <p class="fw-semibold">{{ $service->damage_description }}</p>
-            </div>
-
-            {{-- Metode Pembayaran --}}
-            <div class="col-md-4">
-                <h6 class="text-muted mb-1">Metode Pembayaran</h6>
-                <p class="fw-semibold text-capitalize">{{ $service->paymentmethod }}</p>
-            </div>
-
-            {{-- Status --}}
-            <div class="col-md-4">
-                <h6 class="text-muted mb-1">Status Service</h6>
-                @php
-                    $statusColor = [
-                        'accepted' => 'primary',
-                        'process' => 'warning',
-                        'finished' => 'success',
-                        'taken' => 'info',
-                        'cancelled' => 'danger',
-                    ][$service->status] ?? 'secondary';
-                @endphp
-                <span class="badge bg-{{ $statusColor }} px-3 py-2 rounded-pill">
-                    {{ ucfirst($service->status) }}
-                </span>
-            </div>
-
-            {{-- Status Pembayaran --}}
-            <div class="col-md-4">
-                <h6 class="text-muted mb-1">Status Pembayaran</h6>
-                <span class="badge 
-                    @if($service->status_paid == 'paid') bg-success 
-                    @elseif($service->status_paid == 'debt') bg-warning 
-                    @else bg-danger @endif
-                    px-3 py-2 rounded-pill">
-                    {{ ucfirst($service->status_paid) }}
-                </span>
-            </div>
-
-            {{-- Tanggal Diterima --}}
-            <div class="col-md-4">
-                <h6 class="text-muted mb-1">Tanggal Diterima</h6>
-                <p class="fw-semibold">{{ \Carbon\Carbon::parse($service->received_date)->translatedFormat('d F Y') }}</p>
-            </div>
-
-            {{-- Tanggal Selesai --}}
-            <div class="col-md-4">
-                <h6 class="text-muted mb-1">Tanggal Selesai</h6>
-                <p class="fw-semibold">
-                    {{ $service->completed_date ? \Carbon\Carbon::parse($service->completed_date)->translatedFormat('d F Y') : '-' }}
-                </p>
-            </div>
-
-            {{-- Dibayar --}}
-            <div class="col-md-4">
-                <h6 class="text-muted mb-1">Dibayar</h6>
-                <p class="fw-semibold">Rp {{ number_format($service->paid ?? 0, 0, ',', '.') }}</p>
-            </div>
-
-            {{-- Total Biaya --}}
-            <div class="col-md-12 text-end border-top border-secondary pt-3">
-                <h5 class="fw-bold text-success mb-0">
-                    Total: Rp {{ number_format(($service->estimated_cost + ($service->other_cost ?? 0)), 0, ',', '.') }}
-                </h5>
-            </div>
-        </div>
-
-        {{-- Tombol Aksi --}}
-        <div class="text-center mt-4">
-            <a href="{{ route('service.index') }}" class="btn btn-outline-light px-4">
-                <i class="bi bi-arrow-left"></i> Kembali
-            </a>
-            <a href="{{ route('service.edit', $service->id) }}" class="btn btn-warning px-4 ms-2">
-                <i class="bi bi-pencil-square"></i> Edit
+        <div class="mt-3 d-flex gap-2">
+            <a href="{{ route('service.index') }}" class="btn btn-light">Kembali</a>
+            <a href="{{ route('service.cetakStruk', $service->id) }}" class="btn btn-success" target="_blank">
+                <i class="fas fa-print"></i> Cetak Struk
             </a>
         </div>
     </div>
 </div>
-
-<style>
-    .fw-semibold { font-weight: 600; }
-    .badge { font-size: 0.9rem; }
-    .bg-secondary { background-color: #2b2f36 !important; }
-</style>
 @endsection
