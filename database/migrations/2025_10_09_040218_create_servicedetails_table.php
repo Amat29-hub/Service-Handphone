@@ -12,7 +12,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('service_id')->constrained('services')->onDelete('cascade');
             $table->foreignId('serviceitem_id')->constrained('serviceitems')->onDelete('cascade');
+            $table->integer('qty')->default(1);
             $table->decimal('price', 10, 2)->default(0);
+            $table->decimal('subtotal', 12, 2)->default(0);
             $table->timestamps();
         });
     }

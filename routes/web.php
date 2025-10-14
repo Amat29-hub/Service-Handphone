@@ -5,24 +5,44 @@ use App\Http\Controllers\Backend\UserController;
 use App\Http\Controllers\Backend\ServiceController;
 use App\Http\Controllers\Backend\HandphoneController;
 use App\Http\Controllers\Backend\ServiceItemController;
+use App\Http\Controllers\Backend\AuthController;
 
-// Dashboard
-Route::view('/', 'page.backend.dashboard.index')->name('dashboard');
+/*
+|--------------------------------------------------------------------------
+| Auth Routes
+|--------------------------------------------------------------------------
+*/
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Users
-Route::resource('users', UserController::class);
-Route::patch('users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+/*
+|--------------------------------------------------------------------------
+| Protected Backend Routes
+|--------------------------------------------------------------------------
+| Semua route di bawah ini hanya bisa diakses kalau sudah login.
+| Jika belum login, user akan otomatis diarahkan ke halaman login.
+*/
+Route::middleware('auth')->group(function () {
 
-// Handphone
-Route::resource('handphone', HandphoneController::class);
-Route::patch('handphone/{id}/toggle-status', [HandphoneController::class, 'toggleStatus'])->name('handphone.toggle-status');
+    // Dashboard
+    Route::view('/', 'page.backend.dashboard.index')->name('dashboard');
 
-// Service Item
-Route::resource('serviceitem', ServiceItemController::class);
-Route::patch('serviceitem/{id}/toggle-status', [ServiceItemController::class, 'toggleStatus'])->name('serviceitem.toggle-status');
+    // Users
+    Route::resource('users', UserController::class);
+    Route::patch('users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
 
-// Service
-Route::resource('service', ServiceController::class);
-Route::get('/service/{id}/payment', [ServiceController::class, 'payment'])->name('service.payment');
-Route::post('/service/{id}/payment', [ServiceController::class, 'processPayment'])->name('service.payment.process');
-Route::get('/service/{id}/struk', [ServiceController::class, 'cetakStruk'])->name('service.cetakStruk');
+    // Handphone
+    Route::resource('handphone', HandphoneController::class);
+    Route::patch('handphone/{id}/toggle-status', [HandphoneController::class, 'toggleStatus'])->name('handphone.toggle-status');
+
+    // Service Item
+    Route::resource('serviceitem', ServiceItemController::class);
+    Route::patch('serviceitem/{id}/toggle-status', [ServiceItemController::class, 'toggleStatus'])->name('serviceitem.toggle-status');
+
+    // Service
+    Route::resource('service', ServiceController::class);
+    Route::get('/service/{id}/payment', [ServiceController::class, 'payment'])->name('service.payment');
+    Route::post('/service/{id}/payment', [ServiceController::class, 'processPayment'])->name('service.payment.process');
+    Route::get('/service/{id}/cetak-struk', [ServiceController::class, 'cetakStruk'])->name('service.cetakStruk');
+});
