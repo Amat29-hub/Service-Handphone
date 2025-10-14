@@ -28,26 +28,4 @@ class User extends Authenticatable
     protected $casts = [
         'is_active' => 'boolean',
     ];
-
-    // Relasi ke service sebagai customer
-    public function customerServices(): HasMany
-    {
-        return $this->hasMany(Service::class, 'customer_id');
-    }
-
-    // Relasi ke service sebagai teknisi
-    public function technicianServices(): HasMany
-    {
-        return $this->hasMany(Service::class, 'technician_id');
-    }
-
-    // === Accessor foto ===
-    public function getImageUrlAttribute()
-    {
-        if ($this->image && file_exists(public_path('storage/' . $this->image))) {
-            return asset('storage/' . $this->image);
-        }
-
-        return asset('images/default-avatar.png');
-    }
 }

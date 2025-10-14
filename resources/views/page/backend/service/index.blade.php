@@ -18,7 +18,7 @@
                         <th style="border: 1px solid #555;">No</th>
                         <th style="border: 1px solid #555;">No Invoice</th>
                         <th style="border: 1px solid #555;">Pelanggan</th>
-                        <th style="border: 1px solid #555;">Jenis Service</th>
+                        <th style="border: 1px solid #555;">Teknisi</th>
                         <th style="border: 1px solid #555;">Status</th>
                         <th style="border: 1px solid #555;">Status Bayar</th>
                         <th style="border: 1px solid #555;">Total Biaya</th>
@@ -32,13 +32,11 @@
                             <td class="fw-bold text-info" style="border: 1px solid #555;">
                                 {{ $service->no_invoice }}
                             </td>
-
                             <td class="text-white" style="border: 1px solid #555;">
                                 {{ $service->customer->name ?? '-' }}
                             </td>
-
                             <td class="text-white" style="border: 1px solid #555;">
-                                {{ $service->serviceItem->service_name ?? '-' }}
+                                {{ $service->technician->name ?? '-' }}
                             </td>
 
                             {{-- Status --}}
@@ -67,7 +65,7 @@
                                 </span>
                             </td>
 
-                            {{-- Total --}}
+                            {{-- Total Biaya --}}
                             <td class="fw-bold text-success" style="border: 1px solid #555;">
                                 Rp{{ number_format($service->total_cost ?? 0, 0, ',', '.') }}
                             </td>
