@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container-fluid pt-4 px-4">
-    <div class="bg-secondary rounded p-4 shadow-lg text-light mx-auto" style="max-width: 600px;">
+    <div class="bg-secondary rounded p-4 shadow-lg text-light mx-auto" style="max-width: 800px; width: 95%;">
         <div class="text-center mb-4">
             <h4 class="fw-bold text-white mb-2">👤 Detail User</h4>
             <div class="d-flex justify-content-center">

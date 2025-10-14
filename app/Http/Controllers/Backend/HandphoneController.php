@@ -5,22 +5,20 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\Handphone;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 
 class HandphoneController extends Controller
 {
     /**
-     * Tampilkan daftar handphone
+     * Tampilkan semua handphone.
      */
     public function index()
     {
-        $handphones = Handphone::latest()->get();
+        $handphones = Handphone::all();
         return view('page.backend.handphone.index', compact('handphones'));
     }
 
     /**
-     * Form tambah data
+     * Form create handphone baru.
      */
     public function create()
     {
@@ -28,31 +26,40 @@ class HandphoneController extends Controller
     }
 
     /**
-     * Simpan data baru
+     * Simpan handphone baru.
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'brand' => 'required|string|max:255',
             'model' => 'required|string|max:255',
-            'release_year' => 'nullable|integer|min:2000|max:' . date('Y'),
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'release_year' => 'nullable|integer',
+            'image' => 'nullable|image|max:2048',
         ]);
 
+        $data = $request->only(['brand', 'model', 'release_year']);
+        
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('handphones', 'public');
+            $data['image'] = $request->file('image')->store('handphones', 'public');
         }
 
-        // default aktif saat dibuat
-        $validated['is_active'] = 'active';
+        $data['is_active'] = 'active';
 
-        Handphone::create($validated);
+        Handphone::create($data);
 
-        return redirect()->route('handphone.index')->with('success', 'Data handphone berhasil ditambahkan.');
+        return redirect()->route('handphone.index')->with('success', 'Handphone berhasil ditambahkan!');
     }
 
     /**
-     * Form edit
+     * Tampilkan detail handphone.
+     */
+    public function show(Handphone $handphone)
+    {
+        return view('page.backend.handphone.show', compact('handphone'));
+    }
+
+    /**
+     * Form edit handphone.
      */
     public function edit(Handphone $handphone)
     {
@@ -60,80 +67,48 @@ class HandphoneController extends Controller
     }
 
     /**
-     * Update data
+     * Update handphone.
      */
     public function update(Request $request, Handphone $handphone)
     {
-        $validated = $request->validate([
+        $request->validate([
             'brand' => 'required|string|max:255',
             'model' => 'required|string|max:255',
-            'release_year' => 'nullable|integer|min:2000|max:' . date('Y'),
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'release_year' => 'nullable|integer',
+            'image' => 'nullable|image|max:2048',
         ]);
 
+        $data = $request->only(['brand', 'model', 'release_year']);
+
         if ($request->hasFile('image')) {
-            if ($handphone->image) {
-                Storage::disk('public')->delete($handphone->image);
-            }
-            $validated['image'] = $request->file('image')->store('handphones', 'public');
+            $data['image'] = $request->file('image')->store('handphones', 'public');
         }
 
-        // jika tidak ada perubahan status, biarkan defaultnya
-        if (!isset($validated['is_active'])) {
-            $validated['is_active'] = $handphone->is_active ?? 'active';
-        }
+        $handphone->update($data);
 
-        $handphone->update($validated);
-
-        return redirect()->route('handphone.index')->with('success', 'Data handphone berhasil diperbarui.');
+        return redirect()->route('handphone.index')->with('success', 'Handphone berhasil diperbarui!');
     }
 
     /**
-     * Hapus data
+     * Hapus handphone.
      */
     public function destroy(Handphone $handphone)
     {
-        if ($handphone->image) {
-            Storage::disk('public')->delete($handphone->image);
-        }
-
         $handphone->delete();
-        return redirect()->route('handphone.index')->with('success', 'Data handphone berhasil dihapus.');
+        return redirect()->route('handphone.index')->with('success', 'Handphone berhasil dihapus!');
     }
 
     /**
-     * Toggle status enum ('active' / 'nonactive')
+     * Toggle status active/inactive.
      */
-    public function toggleStatus($id)
+    public function toggleStatus(Handphone $handphone)
     {
-        try {
-            $handphone = Handphone::findOrFail($id);
+        $handphone->is_active = $handphone->is_active === 'active' ? 'inactive' : 'active';
+        $handphone->save();
 
-            // Ubah status
-            if ($handphone->is_active === 'active') {
-                $handphone->is_active = 'nonactive';
-            } else {
-                $handphone->is_active = 'active';
-            }
-
-            $handphone->save();
-
-            return response()->json([
-                'success' => true,
-                'is_active' => $handphone->is_active,
-                'message' => 'Status berhasil diperbarui',
-            ], 200);
-
-        } catch (\Throwable $e) {
-            Log::error('Toggle handphone status error: ' . $e->getMessage(), [
-                'id' => $id,
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan server: ' . $e->getMessage(),
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'is_active' => $handphone->is_active,
+        ]);
     }
 }
