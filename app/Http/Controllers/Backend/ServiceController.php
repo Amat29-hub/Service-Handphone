@@ -113,13 +113,17 @@ class ServiceController extends Controller
     public function processPayment(Request $request, $id)
     {
         $service = Service::findOrFail($id);
-
+    
+        // Validasi input
         $validated = $request->validate([
-            'amount_paid' => 'required|numeric|min:0',
+            'paid' => 'required|numeric|min:0',
+            'paymentmethod' => 'required|string',
         ]);
-
-        $service->paid += $validated['amount_paid'];
-
+    
+        // Tambahkan pembayaran baru
+        $service->paid += $validated['paid'];
+    
+        // Cek status pembayaran
         if ($service->paid >= $service->total_cost) {
             $service->status_paid = 'paid';
         } elseif ($service->paid > 0) {
@@ -127,9 +131,11 @@ class ServiceController extends Controller
         } else {
             $service->status_paid = 'unpaid';
         }
-
+    
+        // Simpan data
         $service->save();
-
+    
+        // Redirect ke halaman index service dengan pesan sukses
         return redirect()->route('service.index')->with('success', 'Pembayaran berhasil diproses!');
     }
 
