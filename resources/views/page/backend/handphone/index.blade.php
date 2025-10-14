@@ -56,9 +56,17 @@
                             </td>
                             <td style="border: 1px solid #555;">
                                 <div class="d-flex gap-2 flex-wrap justify-content-center">
+                                    {{-- Detail --}}
+                                    <a href="{{ route('handphone.show', $item->id) }}" class="btn btn-info btn-sm flex-fill">
+                                        <i class="bi bi-eye"></i> Detail
+                                    </a>
+
+                                    {{-- Edit --}}
                                     <a href="{{ route('handphone.edit', $item->id) }}" class="btn btn-warning btn-sm flex-fill">
                                         <i class="bi bi-pencil-square"></i> Edit
                                     </a>
+
+                                    {{-- Hapus --}}
                                     <form action="{{ route('handphone.destroy', $item->id) }}" 
                                           method="POST" 
                                           class="flex-fill m-0 p-0"
@@ -90,7 +98,6 @@
     <i class="bi bi-arrow-up"></i>
 </a>
 
-<!-- Script toggle status -->
 <script>
     document.querySelectorAll('.toggle-status').forEach(toggle => {
         toggle.addEventListener('change', function() {
