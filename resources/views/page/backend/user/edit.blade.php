@@ -65,12 +65,12 @@
             <div class="mb-3">
                 <label class="form-label">Status</label>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="is_active" id="active" value="1" {{ old('is_active', $user->is_active) == 1 ? 'checked' : '' }}>
+                    <input class="form-check-input" type="radio" name="is_active" id="active" value="active" {{ old('is_active', $user->is_active) === 'active' ? 'checked' : '' }}>
                     <label class="form-check-label" for="active">Active</label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="is_active" id="inactive" value="0" {{ old('is_active', $user->is_active) == 0 ? 'checked' : '' }}>
-                    <label class="form-check-label" for="inactive">Inactive</label>
+                    <input class="form-check-input" type="radio" name="is_active" id="nonactive" value="nonactive" {{ old('is_active', $user->is_active) === 'nonactive' ? 'checked' : '' }}>
+                    <label class="form-check-label" for="nonactive">Nonactive</label>
                 </div>
             </div>
 
