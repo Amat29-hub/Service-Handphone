@@ -37,7 +37,7 @@
                 <i class="fa fa-wallet fa-3x text-primary"></i>
                 <div class="ms-3">
                     <p class="mb-2">Money balance</p>
-                    <h6 class="mb-0">$1234</h6>
+                    <h6 class="mb-0">Rp {{ number_format($totalBalance, 0, ',', '.') }}</h6>
                 </div>
             </div>
         </div>

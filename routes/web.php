@@ -6,6 +6,7 @@ use App\Http\Controllers\Backend\ServiceController;
 use App\Http\Controllers\Backend\HandphoneController;
 use App\Http\Controllers\Backend\ServiceItemController;
 use App\Http\Controllers\Backend\AuthController;
+use App\Http\Controllers\Backend\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +27,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware('auth')->group(function () {
 
     // Dashboard
-    Route::view('/', 'page.backend.dashboard.index')->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Users
     Route::resource('users', UserController::class);
