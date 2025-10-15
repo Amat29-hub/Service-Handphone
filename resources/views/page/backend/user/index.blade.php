@@ -48,7 +48,7 @@
                                         class="form-check-input bg-primary border-0 toggle-status" 
                                         type="checkbox"
                                         id="statusSwitch{{ $user->id }}"
-                                        {{ $user->is_active ? 'checked' : '' }}
+                                        {{ $user->is_active === 'active' ? 'checked' : '' }}
                                         onchange="toggleStatus({{ $user->id }})">
                                 </div>
                             </td>
@@ -86,33 +86,35 @@
     </div>
 </div>
 
-<!-- Tombol Back to Top -->
 <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top">
     <i class="bi bi-arrow-up"></i>
 </a>
 
-<!-- Script toggle status -->
 <script>
     function toggleStatus(id) {
+        const checkbox = document.getElementById(`statusSwitch${id}`);
+        const newStatus = checkbox.checked ? 'active' : 'nonactive';
+
         fetch(`/users/${id}/toggle-status`, {
             method: 'PATCH',
             headers: {
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({ is_active: newStatus })
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                const toast = document.createElement('div');
-                toast.textContent = 'Status berhasil diperbarui!';
-                toast.className = 'toast-msg';
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 2500);
+            if (!data.success) {
+                checkbox.checked = !checkbox.checked; // revert jika gagal
+                alert('Gagal mengubah status user!');
             }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(() => {
+            checkbox.checked = !checkbox.checked; // revert jika error
+            alert('Terjadi kesalahan!');
+        });
     }
 </script>
 
@@ -122,23 +124,17 @@
         transition: background-color 0.2s ease;
     }
 
-    .toast-msg {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: #198754;
-        color: white;
-        padding: 10px 16px;
-        border-radius: 6px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        font-size: 14px;
-        animation: fadeInOut 2.5s ease forwards;
+    /* Toggle switch tetap modern seperti Bootstrap */
+    .form-check-input.bg-primary {
+        cursor: pointer;
+        width: 50px;
+        height: 26px;
+        border-radius: 50px;
+        transition: 0.3s;
     }
 
-    @keyframes fadeInOut {
-        0% { opacity: 0; transform: translateY(10px); }
-        10%, 90% { opacity: 1; transform: translateY(0); }
-        100% { opacity: 0; transform: translateY(10px); }
+    .form-check-input.bg-primary:checked {
+        background-color: #198754;
     }
 </style>
 @endsection

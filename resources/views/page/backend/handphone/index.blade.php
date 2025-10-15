@@ -49,8 +49,8 @@
                                     <input 
                                         class="form-check-input bg-primary border-0 toggle-status"
                                         type="checkbox"
-                                        data-id="{{ $item->id }}"
                                         id="statusSwitch{{ $item->id }}"
+                                        data-id="{{ $item->id }}"
                                         {{ $item->is_active === 'active' ? 'checked' : '' }}>
                                 </div>
                             </td>
@@ -102,34 +102,28 @@
     document.querySelectorAll('.toggle-status').forEach(toggle => {
         toggle.addEventListener('change', function() {
             const id = this.dataset.id;
+            const newStatus = this.checked ? 'active' : 'nonactive';
 
             fetch(`/handphone/${id}/toggle-status`, {
                 method: 'PATCH',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Accept': 'application/json',
+                    'Content-Type': 'application/json'
                 },
+                body: JSON.stringify({ is_active: newStatus })
             })
             .then(res => res.json())
             .then(data => {
-                if (data.success) {
-                    const toast = document.createElement('div');
-                    toast.textContent = data.is_active === 'active' 
-                        ? '✅ Handphone diaktifkan!' 
-                        : '⚠️ Handphone dinonaktifkan!';
-                    toast.className = 'toast-msg';
-                    toast.style.background = data.is_active === 'active' ? '#198754' : '#dc3545';
-                    document.body.appendChild(toast);
-                    setTimeout(() => toast.remove(), 2500);
-                } else {
+                if (!data.success) {
                     alert('Gagal memperbarui status.');
-                    this.checked = !this.checked;
+                    this.checked = !this.checked; // revert jika gagal
                 }
             })
             .catch(err => {
                 console.error('Error:', err);
                 alert('Terjadi kesalahan, cek console/log server.');
-                this.checked = !this.checked;
+                this.checked = !this.checked; // revert jika error
             });
         });
     });
@@ -141,23 +135,17 @@
         transition: background-color 0.2s ease;
     }
 
-    .toast-msg {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        color: white;
-        padding: 10px 16px;
-        border-radius: 6px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        font-size: 14px;
-        animation: fadeInOut 2.5s ease forwards;
-        z-index: 9999;
+    /* Toggle switch modern seperti index user */
+    .form-check-input.bg-primary {
+        cursor: pointer;
+        width: 50px;
+        height: 26px;
+        border-radius: 50px;
+        transition: 0.3s;
     }
 
-    @keyframes fadeInOut {
-        0% { opacity: 0; transform: translateY(10px); }
-        10%, 90% { opacity: 1; transform: translateY(0); }
-        100% { opacity: 0; transform: translateY(10px); }
+    .form-check-input.bg-primary:checked {
+        background-color: #198754;
     }
 </style>
 @endsection

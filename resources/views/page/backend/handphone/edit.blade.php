@@ -2,57 +2,76 @@
 
 @section('content')
 <div class="container-fluid pt-4 px-4">
-    <div class="bg-secondary rounded p-4 shadow-lg">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h5 class="text-white fw-bold mb-0">✏️ Edit Handphone</h5>
-            <a href="{{ route('handphone.index') }}" class="btn btn-outline-light btn-sm">
-                <i class="fa fa-arrow-left me-1"></i> Kembali
-            </a>
-        </div>
+    <h4 class="text-white mb-4 fw-bold">Edit Handphone</h4>
+
+    <div class="bg-secondary text-light rounded p-4 shadow-sm">
+        <a href="{{ route('handphone.index') }}" class="btn btn-sm btn-primary mb-3">Kembali</a>
+
+        {{-- Error alert --}}
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <form action="{{ route('handphone.update', $handphone->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label text-white">Brand</label>
-                    <input type="text" name="brand" class="form-control bg-dark text-white border-0" value="{{ $handphone->brand }}" required>
+            {{-- Brand --}}
+            <div class="mb-3">
+                <label for="brand" class="form-label">Brand</label>
+                <input type="text" name="brand" id="brand" class="form-control" value="{{ old('brand', $handphone->brand) }}" required>
+            </div>
+
+            {{-- Model --}}
+            <div class="mb-3">
+                <label for="model" class="form-label">Model</label>
+                <input type="text" name="model" id="model" class="form-control" value="{{ old('model', $handphone->model) }}" required>
+            </div>
+
+            {{-- Release Year --}}
+            <div class="mb-3">
+                <label for="release_year" class="form-label">Tahun Rilis</label>
+                <select name="release_year" id="release_year" class="form-select" required>
+                    <option value="">-- Pilih Tahun --</option>
+                    @for ($year = date('Y'); $year >= 2000; $year--)
+                        <option value="{{ $year }}" {{ old('release_year', $handphone->release_year) == $year ? 'selected' : '' }}>
+                            {{ $year }}
+                        </option>
+                    @endfor
+                </select>
+            </div>
+
+            {{-- Gambar --}}
+            <div class="mb-3">
+                <label for="image" class="form-label">Gambar</label>
+                <input type="file" name="image" id="image" class="form-control" accept="image/*">
+                @if ($handphone->image)
+                    <div class="mt-2">
+                        <img src="{{ asset('storage/' . $handphone->image) }}" alt="Gambar Handphone" width="120" class="rounded border">
+                    </div>
+                @endif
+            </div>
+
+            {{-- Status --}}
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="is_active" id="active" value="active" {{ old('is_active', $handphone->is_active) == 'active' ? 'checked' : '' }}>
+                    <label class="form-check-label" for="active">Active</label>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label text-white">Model</label>
-                    <input type="text" name="model" class="form-control bg-dark text-white border-0" value="{{ $handphone->model }}" required>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="is_active" id="nonactive" value="nonactive" {{ old('is_active', $handphone->is_active) == 'nonactive' ? 'checked' : '' }}>
+                    <label class="form-check-label" for="nonactive">Nonactive</label>
                 </div>
             </div>
 
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label text-white">Release Year</label>
-                    <select name="release_year" class="form-select bg-dark text-white border-0" required>
-                        <option value="">-- Pilih Tahun --</option>
-                        @for ($year = date('Y'); $year >= 2000; $year--)
-                            <option value="{{ $year }}" {{ $handphone->release_year == $year ? 'selected' : '' }}>
-                                {{ $year }}
-                            </option>
-                        @endfor
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label text-white">Gambar</label>
-                    <input type="file" name="image" class="form-control bg-dark text-white border-0">
-                    @if ($handphone->image)
-                        <div class="mt-2">
-                            <img src="{{ asset('storage/' . $handphone->image) }}" alt="Gambar Handphone" width="120" class="rounded border">
-                        </div>
-                    @endif
-                </div>
-            </div>
-
-            <div class="text-end">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa fa-save me-1"></i> Perbarui
-                </button>
-            </div>
+            <button type="submit" class="btn btn-success">Simpan Perubahan</button>
         </form>
     </div>
 </div>

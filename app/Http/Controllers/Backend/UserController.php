@@ -26,42 +26,39 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6',
-            'role' => 'required|in:admin,technician,customer',
-            'image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
-            'is_active' => 'required|in:0,1',
+            'name'      => 'required|string|max:255',
+            'email'     => 'required|email|unique:users,email',
+            'password'  => 'required|min:6',
+            'role'      => 'required|in:admin,technician,customer',
+            'image'     => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
+            'is_active' => 'required|in:active,nonactive',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
-        $validated['is_active'] = (int) $validated['is_active'];
 
-        // Simpan foto jika ada
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('users', 'public');
         }
 
         $user = User::create($validated);
 
-        // Buat service otomatis jika role customer
         if ($user->role === 'customer') {
             $handphone = Handphone::first();
             if ($handphone) {
                 Service::create([
-                    'no_invoice' => 'INV-' . strtoupper(uniqid()),
-                    'customer_id' => $user->id,
-                    'handphone_id' => $handphone->id,
-                    'damage_description' => 'Belum ada keterangan',
-                    'estimated_cost' => 0,
-                    'status' => 'accepted',
-                    'total_cost' => 0,
-                    'other_cost' => 0,
-                    'paid' => 0,
-                    'change' => 0,
-                    'paymentmethod' => null,
-                    'status_paid' => 'unpaid',
-                    'received_date' => now(),
+                    'no_invoice'          => 'INV-' . strtoupper(uniqid()),
+                    'customer_id'         => $user->id,
+                    'handphone_id'        => $handphone->id,
+                    'damage_description'  => 'Belum ada keterangan',
+                    'estimated_cost'      => 0,
+                    'status'              => 'accepted',
+                    'total_cost'          => 0,
+                    'other_cost'          => 0,
+                    'paid'                => 0,
+                    'change'              => 0,
+                    'paymentmethod'       => null,
+                    'status_paid'         => 'unpaid',
+                    'received_date'       => now(),
                 ]);
             }
         }
@@ -83,15 +80,13 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'password' => 'nullable|min:6',
-            'role' => 'required|in:admin,technician,customer',
-            'image' => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
-            'is_active' => 'required|in:0,1',
+            'name'      => 'required|string|max:255',
+            'email'     => 'required|email|unique:users,email,' . $user->id,
+            'password'  => 'nullable|min:6',
+            'role'      => 'required|in:admin,technician,customer',
+            'image'     => 'nullable|image|mimes:jpg,png,jpeg|max:2048',
+            'is_active' => 'required|in:active,nonactive',
         ]);
-
-        $validated['is_active'] = (int) $validated['is_active'];
 
         if ($request->filled('password')) {
             $validated['password'] = Hash::make($validated['password']);
@@ -99,7 +94,6 @@ class UserController extends Controller
             unset($validated['password']);
         }
 
-        // Update foto jika baru di-upload
         if ($request->hasFile('image')) {
             if ($user->image && Storage::disk('public')->exists($user->image)) {
                 Storage::disk('public')->delete($user->image);
@@ -124,9 +118,20 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User berhasil dihapus.');
     }
 
-    public function toggleStatus(Request $request, User $user)
+    public function toggleStatus(Request $request, $id)
     {
-        $user->update(['is_active' => $request->is_active]);
-        return response()->json(['success' => true]);
+        $request->validate([
+            'is_active' => 'required|in:active,nonactive',
+        ]);
+
+        $user = User::findOrFail($id);
+        $user->update([
+            'is_active' => $request->is_active
+        ]);
+
+        return response()->json([
+            'success'   => true,
+            'is_active' => $user->is_active
+        ]);
     }
 }
