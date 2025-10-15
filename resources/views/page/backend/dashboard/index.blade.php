@@ -10,7 +10,7 @@
                 <i class="fa fa-shopping-cart fa-3x text-primary"></i>
                 <div class="ms-3">
                     <p class="mb-2">Order</p>
-                    <h6 class="mb-0">$1234</h6>
+                    <h6 class="mb-0">{{ $totalProductOrdered }}</h6>
                 </div>
             </div>
         </div>
@@ -19,7 +19,7 @@
                 <i class="fa fa-user fa-3x text-primary"></i>
                 <div class="ms-3">
                     <p class="mb-2">Customer</p>
-                    <h6 class="mb-0">$1234</h6>
+                    <h6 class="mb-0">{{ $totalCustomer }}</h6>
                 </div>
             </div>
         </div>
@@ -28,7 +28,7 @@
                 <i class="fa fa-wrench fa-3x text-primary"></i>
                 <div class="ms-3">
                     <p class="mb-2">Service</p>
-                    <h6 class="mb-0">$1234</h6>
+                    <h6 class="mb-0">{{ $totalService }}</h6>
                 </div>
             </div>
         </div>
