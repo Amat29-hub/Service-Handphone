@@ -5,6 +5,7 @@
     <div class="bg-secondary rounded p-4 shadow-lg text-light mx-auto" style="max-width: 800px; width: 95%;">
         <div class="text-center mb-4">
             <h4 class="fw-bold text-white mb-2">👤 Detail User</h4>
+
             <div class="d-flex justify-content-center">
                 @if($user->image)
                     <img src="{{ asset('storage/'.$user->image) }}" 
@@ -40,8 +41,8 @@
 
         <div class="mb-3">
             <h6 class="text-muted mb-1">Status Akun</h6>
-            <span class="badge {{ $user->is_active ? 'bg-success' : 'bg-danger' }} px-3 py-2 rounded-pill fs-6">
-                {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
+            <span class="badge {{ $user->is_active === 'active' ? 'bg-success' : 'bg-danger' }} px-3 py-2 rounded-pill fs-6">
+                {{ $user->is_active === 'active' ? 'Aktif' : 'Nonaktif' }}
             </span>
         </div>
 
@@ -49,10 +50,10 @@
 
         <div class="text-center mt-4">
             <a href="{{ route('users.index') }}" class="btn btn-outline-light px-4">
-                <i class="bi bi-arrow-left"></i> Kembali
+                <i class="bi bi-arrow-left me-1"></i> Kembali
             </a>
             <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning px-4 ms-2">
-                <i class="bi bi-pencil-square"></i> Edit
+                <i class="bi bi-pencil-square me-1"></i> Edit
             </a>
         </div>
     </div>
