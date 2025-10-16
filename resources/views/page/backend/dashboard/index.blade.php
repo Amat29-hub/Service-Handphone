@@ -65,51 +65,39 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>01 Jan 2045</td>
-                        <td>INV-0123</td>
-                        <td>John Doe</td>
-                        <td>$123</td>
-                        <td>Paid</td>
-                        <td><a class="btn btn-sm btn-primary" href="">Detail</a></td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>02 Jan 2045</td>
-                        <td>INV-0456</td>
-                        <td>Jane Smith</td>
-                        <td>$321</td>
-                        <td>Pending</td>
-                        <td><a class="btn btn-sm btn-primary" href="">Detail</a></td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>03 Jan 2045</td>
-                        <td>INV-0789</td>
-                        <td>Michael Lee</td>
-                        <td>$456</td>
-                        <td>Paid</td>
-                        <td><a class="btn btn-sm btn-primary" href="">Detail</a></td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td>04 Jan 2045</td>
-                        <td>INV-0999</td>
-                        <td>Emily Clark</td>
-                        <td>$654</td>
-                        <td>Cancelled</td>
-                        <td><a class="btn btn-sm btn-primary" href="">Detail</a></td>
-                    </tr>
-                    <tr>
-                        <td>5</td>
-                        <td>05 Jan 2045</td>
-                        <td>INV-1001</td>
-                        <td>David Park</td>
-                        <td>$987</td>
-                        <td>Paid</td>
-                        <td><a class="btn btn-sm btn-primary" href="">Detail</a></td>
-                    </tr>
+                     @forelse ($recentServices as $index => $service)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ \Carbon\Carbon::parse($service->received_date)->format('d M Y') }}</td>
+                            <td class="text-info fw-bold">{{ $service->no_invoice }}</td>
+                            <td>{{ $service->customer->name ?? '-' }}</td>
+                            <td>Rp{{ number_format($service->total_cost, 0, ',', '.') }}</td>
+                            <td>
+                                @php
+                                    $statusColor = [
+                                        'accepted' => 'primary',
+                                        'process' => 'warning',
+                                        'finished' => 'success',
+                                        'taken' => 'info',
+                                        'cancelled' => 'danger',
+                                    ][$service->status] ?? 'secondary';
+                                @endphp
+                                <span class="badge bg-{{ $statusColor }}">
+                                    {{ ucfirst($service->status) }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ route('service.show', $service->id) }}"
+                                   class="btn btn-sm btn-outline-light">Detail</a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center text-white py-3">
+                                Belum ada riwayat pemesanan.
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
