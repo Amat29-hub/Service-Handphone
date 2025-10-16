@@ -12,22 +12,30 @@ use App\Http\Controllers\Controller;
 class DashboardController extends Controller
 {
     public function index(){
-    // Ambil semua total_cost dari service yang sudah "paid"
+        // Total uang masuk
         $totalBalance = Service::where('status_paid', 'paid')->sum('total_cost');
 
         // Total semua service
         $totalService = Service::count();
 
-        // Total customer (misal role 'customer' disimpan di kolom 'role')
+        // Total customer
         $totalCustomer = User::where('role', 'customer')->count();
 
+        // Total produk yang sudah diorder
         $totalProductOrdered = ServiceDetail::sum('qty');
+
+        // Riwayat pemesanan (5 data terbaru)
+        $recentServices = Service::with('customer')
+            ->latest('received_date')
+            ->take(5)
+            ->get();
 
         return view('page.backend.dashboard.index', compact(
             'totalBalance',
             'totalService',
             'totalCustomer',
-            'totalProductOrdered'
+            'totalProductOrdered',
+            'recentServices'
         ));
     }
 }

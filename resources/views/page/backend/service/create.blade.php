@@ -113,16 +113,6 @@
                         <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
-
-                <div class="col-md-4">
-                    <label class="form-label text-light">Tanggal Diterima</label>
-                    <input type="date" name="received_date" class="form-control bg-dark text-light border-0">
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label text-light">Tanggal Selesai</label>
-                    <input type="date" name="completed_date" class="form-control bg-dark text-light border-0">
-                </div>
             </div>
 
             {{-- Biaya Lain & Total Akhir --}}
