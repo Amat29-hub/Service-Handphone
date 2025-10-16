@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -23,12 +24,12 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|in:admin,user',
-            'is_active' => 'required|in:active,nonactive',
-            'image' => 'nullable|image|max:2048',
+            'name'       => 'required|string|max:255',
+            'email'      => 'required|email|unique:users,email',
+            'password'   => 'required|string|min:6',
+            'role'       => 'required|in:admin,technician,customer',
+            'is_active'  => 'required|in:active,nonactive',
+            'image'      => 'nullable|image|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
@@ -50,17 +51,17 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:admin,user',
-            'is_active' => 'required|in:active,nonactive',
-            'image' => 'nullable|image|max:2048',
-            'password' => 'nullable|string|min:6|confirmed',
+            'name'       => 'required|string|max:255',
+            'email'      => 'required|email|unique:users,email,' . $user->id,
+            'role'       => 'required|in:admin,technician,customer',
+            'is_active'  => 'required|in:active,nonactive',
+            'image'      => 'nullable|image|max:2048',
+            'password'   => 'nullable|string|min:6',
         ]);
 
         if ($request->hasFile('image')) {
-            if ($user->image && \Storage::disk('public')->exists($user->image)) {
-                \Storage::disk('public')->delete($user->image);
+            if ($user->image && Storage::disk('public')->exists($user->image)) {
+                Storage::disk('public')->delete($user->image);
             }
             $validated['image'] = $request->file('image')->store('users', 'public');
         }
@@ -83,8 +84,8 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        if ($user->image && \Storage::disk('public')->exists($user->image)) {
-            \Storage::disk('public')->delete($user->image);
+        if ($user->image && Storage::disk('public')->exists($user->image)) {
+            Storage::disk('public')->delete($user->image);
         }
 
         $user->delete();
@@ -92,7 +93,7 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User berhasil dihapus!');
     }
 
-    public function toggleStatus(Request $request, $id)
+    public function toggleStatus($id)
     {
         $user = User::findOrFail($id);
         $user->is_active = $user->is_active === 'active' ? 'nonactive' : 'active';
