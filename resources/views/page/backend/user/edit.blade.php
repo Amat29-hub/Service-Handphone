@@ -25,18 +25,22 @@
             {{-- Nama --}}
             <div class="mb-3">
                 <label for="name" class="form-label">Nama</label>
-                <input type="text" class="form-control" id="name" name="name" value="{{ old('name', $user->name) }}" required>
+                <input type="text" class="form-control" id="name" name="name"
+                    value="{{ old('name', $user->name) }}" required>
             </div>
 
             {{-- Email --}}
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" value="{{ old('email', $user->email) }}" required>
+                <input type="email" class="form-control" id="email" name="email"
+                    value="{{ old('email', $user->email) }}" required>
             </div>
 
             {{-- Password --}}
             <div class="mb-3">
-                <label for="password" class="form-label">Password <small class="text-warning">(kosongkan jika tidak ingin diubah)</small></label>
+                <label for="password" class="form-label">
+                    Password <small class="text-warning">(kosongkan jika tidak ingin diubah)</small>
+                </label>
                 <input type="password" class="form-control" id="password" name="password">
             </div>
 
@@ -50,12 +54,14 @@
                 </select>
             </div>
 
-            {{-- Avatar --}}
+            {{-- Foto Profil --}}
             <div class="mb-3">
                 <label for="image" class="form-label">Foto Profil</label>
                 @if ($user->image)
                     <div class="mb-2">
-                        <img src="{{ asset('storage/'.$user->image) }}" alt="Avatar" class="rounded-circle" width="80" height="80">
+                        <img src="{{ asset('storage/'.$user->image) }}" alt="Avatar"
+                             class="rounded-circle shadow-sm border border-light"
+                             width="80" height="80">
                     </div>
                 @endif
                 <input type="file" class="form-control" id="image" name="image" accept="image/*">
@@ -65,16 +71,18 @@
             <div class="mb-3">
                 <label class="form-label">Status</label>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="is_active" id="active" value="active" {{ old('is_active', $user->is_active) === 'active' ? 'checked' : '' }}>
+                    <input class="form-check-input" type="radio" name="is_active" id="active" value="active"
+                        {{ old('is_active', $user->is_active) === 'active' ? 'checked' : '' }}>
                     <label class="form-check-label" for="active">Active</label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="is_active" id="nonactive" value="nonactive" {{ old('is_active', $user->is_active) === 'nonactive' ? 'checked' : '' }}>
+                    <input class="form-check-input" type="radio" name="is_active" id="nonactive" value="nonactive"
+                        {{ old('is_active', $user->is_active) === 'nonactive' ? 'checked' : '' }}>
                     <label class="form-check-label" for="nonactive">Nonactive</label>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-success">Simpan Perubahan</button>
+            <button type="submit" class="btn btn-success mt-2">Simpan Perubahan</button>
         </form>
     </div>
 </div>
