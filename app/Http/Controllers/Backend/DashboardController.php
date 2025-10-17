@@ -13,7 +13,7 @@ class DashboardController extends Controller
 {
     public function index(){
         // Total uang masuk
-        $totalBalance = Service::where('status_paid', 'paid')->sum('total_cost');
+        $totalBalance = Service::where('paid', '>', 0)->sum('paid');
 
         // Total semua service
         $totalService = Service::count();
