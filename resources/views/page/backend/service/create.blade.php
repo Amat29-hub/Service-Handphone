@@ -101,30 +101,11 @@
                 <i class="fa fa-plus-circle me-2"></i>Tambah Produk
             </button>
 
-            {{-- Status dan Tanggal --}}
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <label class="form-label text-light">Status Service *</label>
-                    <select name="status" class="form-select bg-dark text-light border-0" required>
-                        <option value="accepted">Accepted</option>
-                        <option value="process">Process</option>
-                        <option value="finished">Finished</option>
-                        <option value="taken">Taken</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
-                </div>
-            </div>
-
-            {{-- Biaya Lain & Total Akhir --}}
+            {{-- Biaya Lain --}}
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label text-light">Biaya Lain (Opsional)</label>
                     <input type="number" step="0.01" name="other_cost" id="otherCost" class="form-control bg-dark text-light border-0" value="0">
-                </div>
-                <div class="col-md-6">
-                    <div class="card bg-dark text-light mb-3 p-3">
-                        <h6>Total Akhir: Rp <span id="grandTotal">0</span></h6>
-                    </div>
                 </div>
             </div>
 
@@ -154,7 +135,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const otherCostInput = document.getElementById('otherCost');
     const totalPriceEl = document.getElementById('totalPrice');
-    const grandTotalEl = document.getElementById('grandTotal');
+    const tbody = document.querySelector('#productTable tbody');
 
     function recalcTotals() {
         let totalItem = 0;
@@ -170,14 +151,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         document.getElementById('totalItem').textContent = totalItem;
         totalPriceEl.textContent = totalPrice.toFixed(2);
-        updateGrandTotal();
     }
 
-    function updateGrandTotal() {
-        const totalProduk = parseFloat(totalPriceEl.textContent) || 0;
-        const other = parseFloat(otherCostInput.value) || 0;
-        const grand = totalProduk + other;
-        grandTotalEl.textContent = grand.toFixed(2);
+    function updateRemoveButtons() {
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach(btnRow => {
+            const btn = btnRow.querySelector('.removeRow');
+            btn.disabled = (rows.length === 1);
+        });
     }
 
     function attachEvents(row) {
@@ -186,26 +167,32 @@ document.addEventListener('DOMContentLoaded', function() {
             row.querySelector('.price').value = price.toFixed(2);
             recalcTotals();
         });
+
         row.querySelector('.qty').addEventListener('input', recalcTotals);
+
         row.querySelector('.removeRow').addEventListener('click', function() {
-            row.remove();
-            recalcTotals();
+            if (tbody.rows.length > 1) {
+                row.remove();
+                recalcTotals();
+                updateRemoveButtons();
+            }
         });
     }
 
     document.getElementById('addRow').addEventListener('click', function() {
-        const tbody = document.querySelector('#productTable tbody');
         const newRow = tbody.rows[0].cloneNode(true);
         newRow.querySelectorAll('input').forEach(i => i.value = '');
         newRow.querySelector('.qty').value = 1;
         attachEvents(newRow);
         tbody.appendChild(newRow);
+        updateRemoveButtons();
     });
 
-    otherCostInput.addEventListener('input', updateGrandTotal);
+    otherCostInput.addEventListener('input', recalcTotals);
 
     document.querySelectorAll('#productTable tbody tr').forEach(attachEvents);
     recalcTotals();
+    updateRemoveButtons();
 });
 </script>
 @endsection
