@@ -65,10 +65,8 @@
                 <thead>
                     <tr>
                         <th style="width: 8%">Aksi</th>
-                        <th style="width: 40%">Produk</th>
-                        <th style="width: 10%">Qty</th>
-                        <th style="width: 20%">Harga</th>
-                        <th style="width: 22%">Subtotal</th>
+                        <th style="width: 60%">Produk</th>
+                        <th style="width: 32%">Harga</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -85,13 +83,7 @@
                             </select>
                         </td>
                         <td>
-                            <input type="number" name="qty[]" class="form-control bg-dark text-light border-0 qty" value="1" min="1">
-                        </td>
-                        <td>
                             <input type="text" name="price[]" class="form-control bg-dark text-light border-0 price" readonly>
-                        </td>
-                        <td>
-                            <input type="text" name="subtotal[]" class="form-control bg-dark text-light border-0 subtotal" readonly>
                         </td>
                     </tr>
                 </tbody>
@@ -133,21 +125,15 @@
 {{-- Script --}}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const otherCostInput = document.getElementById('otherCost');
     const totalPriceEl = document.getElementById('totalPrice');
     const tbody = document.querySelector('#productTable tbody');
 
     function recalcTotals() {
-        let totalItem = 0;
+        let totalItem = tbody.querySelectorAll('tr').length;
         let totalPrice = 0;
-        document.querySelectorAll('#productTable tbody tr').forEach(function(row) {
-            const qty = parseInt(row.querySelector('.qty').value) || 0;
+        tbody.querySelectorAll('tr').forEach(function(row) {
             const price = parseFloat(row.querySelector('.price').value) || 0;
-            const subtotalField = row.querySelector('.subtotal');
-            const subtotal = qty * price;
-            subtotalField.value = subtotal.toFixed(2);
-            totalItem += qty;
-            totalPrice += subtotal;
+            totalPrice += price;
         });
         document.getElementById('totalItem').textContent = totalItem;
         totalPriceEl.textContent = totalPrice.toFixed(2);
@@ -168,8 +154,6 @@ document.addEventListener('DOMContentLoaded', function() {
             recalcTotals();
         });
 
-        row.querySelector('.qty').addEventListener('input', recalcTotals);
-
         row.querySelector('.removeRow').addEventListener('click', function() {
             if (tbody.rows.length > 1) {
                 row.remove();
@@ -182,13 +166,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addRow').addEventListener('click', function() {
         const newRow = tbody.rows[0].cloneNode(true);
         newRow.querySelectorAll('input').forEach(i => i.value = '');
-        newRow.querySelector('.qty').value = 1;
+        newRow.querySelector('.product-select').value = '';
         attachEvents(newRow);
         tbody.appendChild(newRow);
         updateRemoveButtons();
+        recalcTotals();
     });
-
-    otherCostInput.addEventListener('input', recalcTotals);
 
     document.querySelectorAll('#productTable tbody tr').forEach(attachEvents);
     recalcTotals();
