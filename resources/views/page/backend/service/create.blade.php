@@ -116,7 +116,7 @@
             </div>
 
             <button type="submit" class="btn btn-success px-4 fw-bold">
-                <i class="fa fa-save me-2"></i> Simpan Service
+                <i class="fa fa-save me-2"></i> Simpan
             </button>
         </form>
     </div>

@@ -5,67 +5,83 @@
     <div class="card bg-dark text-light rounded-4 shadow-lg p-4">
         <h4 class="fw-bold mb-4">Detail Transaksi Service</h4>
 
-        <div class="row mb-3">
-            <div class="col-md-4">
+        {{-- Informasi Service --}}
+        <div class="row mb-4">
+            <div class="col-md-4 mb-2">
                 <strong>No Invoice:</strong> {{ $service->no_invoice }}
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 mb-2">
                 <strong>Pelanggan:</strong> {{ $service->customer->name ?? '-' }}
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 mb-2">
                 <strong>Teknisi:</strong> {{ $service->technician->name ?? '-' }}
             </div>
-        </div>
 
-        <div class="row mb-3">
-            <div class="col-md-4">
+            <div class="col-md-4 mb-2">
                 <strong>Handphone:</strong> {{ $service->handphone->brand ?? '-' }} {{ $service->handphone->model ?? '' }}
             </div>
-            <div class="col-md-4">
-                <strong>Status:</strong> {{ ucfirst($service->status) }}
+            <div class="col-md-4 mb-2">
+                <strong>Status:</strong> 
+                <span class="badge 
+                    @if($service->status == 'accepted') bg-primary 
+                    @elseif($service->status == 'process') bg-warning 
+                    @elseif($service->status == 'finished') bg-success 
+                    @elseif($service->status == 'taken') bg-info 
+                    @elseif($service->status == 'cancelled') bg-danger 
+                    @else bg-secondary @endif">
+                    {{ ucfirst($service->status) }}
+                </span>
             </div>
-            <div class="col-md-4">
-                <strong>Status Pembayaran:</strong> {{ ucfirst($service->status_paid) }}
+            <div class="col-md-4 mb-2">
+                <strong>Status Pembayaran:</strong> 
+                <span class="badge 
+                    @if($service->status_paid == 'paid') bg-success 
+                    @elseif($service->status_paid == 'debt') bg-warning 
+                    @else bg-danger @endif">
+                    {{ ucfirst($service->status_paid) }}
+                </span>
             </div>
         </div>
 
+        {{-- Tabel Item Service --}}
         <div class="card bg-secondary text-light rounded-4 mb-4 p-3">
             <h5>Produk / Item Tambahan</h5>
-            <table class="table table-dark table-bordered">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Nama Produk</th>
-                        <th>Qty</th>
-                        <th>Harga</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php $total = 0; @endphp
-                    @foreach($service->details as $i => $detail)
-                        @php $total += $detail->subtotal; @endphp
-                        <tr>
-                            <td>{{ $i + 1 }}</td>
-                            <td>{{ $detail->serviceitem->service_name ?? '-' }}</td>
-                            <td>{{ $detail->qty }}</td>
-                            <td>{{ number_format($detail->price, 0, ',', '.') }}</td>
-                            <td>{{ number_format($detail->subtotal, 0, ',', '.') }}</td>
+            <div class="table-responsive">
+                <table class="table table-dark table-bordered align-middle text-center mb-0"
+                       style="border-collapse: collapse; border: 1px solid #555;">
+                    <thead style="background-color: #2b2b2b;">
+                        <tr class="text-white">
+                            <th style="border: 1px solid #555; width:5%">No</th>
+                            <th style="border: 1px solid #555;">Nama Produk</th>
+                            <th style="border: 1px solid #555; width:20%">Harga</th>
                         </tr>
-                    @endforeach
-                    @if($service->details->isEmpty())
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-3">Belum ada item service ditambahkan.</td>
-                        </tr>
-                    @endif
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @php $total = 0; @endphp
+                        @forelse($service->details as $i => $detail)
+                            @php $price = $detail->price ?? 0; $total += $price; @endphp
+                            <tr style="border: 1px solid #555;">
+                                <td style="border: 1px solid #555;">{{ $i + 1 }}</td>
+                                <td style="border: 1px solid #555;">{{ $detail->serviceitem->service_name ?? '-' }}</td>
+                                <td style="border: 1px solid #555;">{{ number_format($price, 0, ',', '.') }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-3" style="border: 1px solid #555;">
+                                    Belum ada item service ditambahkan.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
             <div class="text-end fw-bold mt-2">
                 Total Biaya: {{ number_format($service->total_cost ?? $total, 0, ',', '.') }}
             </div>
         </div>
 
-        <div>
+        {{-- Keterangan Kerusakan --}}
+        <div class="mb-3">
             <strong>Keterangan Kerusakan:</strong>
             <p>{{ $service->damage_description ?? '-' }}</p>
         </div>
@@ -73,4 +89,11 @@
         <a href="{{ route('service.index') }}" class="btn btn-primary mt-3">Kembali</a>
     </div>
 </div>
+
+<style>
+    .table-dark tbody tr:hover {
+        background-color: #2f3337 !important;
+        transition: background-color 0.2s ease;
+    }
+</style>
 @endsection

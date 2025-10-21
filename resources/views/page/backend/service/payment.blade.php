@@ -6,7 +6,7 @@
         {{-- Header --}}
         <div class="d-flex align-items-center justify-content-between mb-4 border-bottom border-secondary pb-2">
             <h4 class="fw-bold text-white mb-0">
-                <i class="fa-solid fa-money-bill-wave me-2 text-success"></i> Pembayaran Service
+                <i class="fa-solid bi-receipt me-2 text-success"></i> Pembayaran Service
             </h4>
             <a href="{{ route('service.index') }}" class="btn btn-outline-light btn-sm">
                 <i class="fa fa-arrow-left me-1"></i> Kembali
@@ -25,9 +25,9 @@
                     <div class="col-md-6"><strong>Handphone:</strong> {{ $service->handphone->brand ?? '-' }} {{ $service->handphone->type ?? '' }}</div>
                     <div class="col-md-6"><strong>Teknisi:</strong> {{ $service->technician->name ?? '-' }}</div>
                     <div class="col-md-6"><strong>Kerusakan:</strong> {{ $service->damage_description }}</div>
-                    <div class="col-md-6"><strong>Tanggal Diterima:</strong> {{ \Carbon\Carbon::parse($service->received_date)->format('d M Y') }}</div>
+                    <div class="col-md-6"><strong>Tgl Diterima:</strong> {{ \Carbon\Carbon::parse($service->received_date)->format('d M Y') }}</div>
                     @if($service->completed_date)
-                        <div class="col-md-6"><strong>Tanggal Selesai:</strong> {{ \Carbon\Carbon::parse($service->completed_date)->format('d M Y') }}</div>
+                        <div class="col-md-6"><strong>Tgl Selesai:</strong> {{ \Carbon\Carbon::parse($service->completed_date)->format('d M Y') }}</div>
                     @endif
                 </div>
             </div>
@@ -37,35 +37,35 @@
         <div class="card bg-dark border-0 mb-4 rounded-3 shadow-sm">
             <div class="card-body">
                 <h6 class="fw-bold text-warning mb-3">
-                    <i class="fa-solid fa-receipt me-2"></i>Rincian Biaya
+                    <i class="bi-receipt me-2"></i>Rincian Biaya
                 </h6>
-                <div class="table-responsive rounded">
-                    <table class="table table-dark table-hover align-middle mb-0">
-                        <thead class="bg-gradient text-light text-center border-bottom border-secondary">
-                            <tr>
-                                <th style="width: 40%">Item Service</th>
-                                <th style="width: 15%">Qty</th>
-                                <th style="width: 20%">Harga (Rp)</th>
-                                <th style="width: 25%">Subtotal (Rp)</th>
+
+                <div class="table-responsive">
+                    <table class="table table-dark align-middle text-center mb-0 table-hover"
+                        style="border-collapse: collapse; border: 1px solid #555;">
+                        <thead style="background-color: #2b2b2b;">
+                            <tr class="text-white">
+                                <th style="border: 1px solid #555;">Item Service</th>
+                                <th style="border: 1px solid #555;">Harga (Rp)</th>
                             </tr>
                         </thead>
                         <tbody>
                             @php $totalService = 0; @endphp
                             @forelse($service->details as $detail)
                                 @php
-                                    $price = $detail->serviceitem->price ?? 0;
-                                    $subtotal = $detail->subtotal ?? ($price * $detail->qty);
-                                    $totalService += $subtotal;
+                                    $item = $detail->serviceitem;
+                                    $price = $item->price ?? 0;
+                                    $totalService += $price;
                                 @endphp
-                                <tr>
-                                    <td>{{ $detail->serviceitem->name ?? '-' }}</td>
-                                    <td class="text-center">{{ $detail->qty }}</td>
-                                    <td class="text-end">Rp {{ number_format($price, 0, ',', '.') }}</td>
-                                    <td class="text-end text-success fw-semibold">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
+                                <tr style="border: 1px solid #555;">
+                                    <td style="border: 1px solid #555;">{{ $item->service_name ?? '-' }}</td>
+                                    <td class="text-end text-success fw-semibold" style="border: 1px solid #555;">
+                                        Rp {{ number_format($price, 0, ',', '.') }}
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-3">
+                                    <td colspan="2" class="text-center text-muted py-3" style="border: 1px solid #555;">
                                         Belum ada item service ditambahkan.
                                     </td>
                                 </tr>
@@ -74,7 +74,7 @@
                     </table>
                 </div>
 
-                {{-- Total Section --}}
+                {{-- Ringkasan Total --}}
                 @php
                     $otherCost = $service->other_cost ?? 0;
                     $grandTotal = $service->total_cost ?? ($totalService + $otherCost);
@@ -82,14 +82,25 @@
                     $remaining = max($grandTotal - $paid, 0);
                 @endphp
 
-                <div class="mt-4 bg-secondary rounded-3 p-4 border-start border-4 border-info shadow-sm">
-                    <h6 class="fw-bold text-info mb-3">💰 Ringkasan Pembayaran</h6>
-                    <div class="small">
-                        <p class="mb-1"><strong>Total Item Service:</strong> Rp {{ number_format($totalService, 0, ',', '.') }}</p>
-                        <p class="mb-1"><strong>Biaya Lain:</strong> Rp {{ number_format($otherCost, 0, ',', '.') }}</p>
-                        <p class="mb-1"><strong class="text-info">Total Keseluruhan:</strong> Rp {{ number_format($grandTotal, 0, ',', '.') }}</p>
-                        <p class="mb-1"><strong class="text-success">Sudah Dibayar:</strong> Rp {{ number_format($paid, 0, ',', '.') }}</p>
-                        <p class="fw-bold text-danger mt-2"><i class="fa-solid fa-coins me-1"></i> Sisa Pembayaran: Rp {{ number_format($remaining, 0, ',', '.') }}</p>
+                <div class="mt-4 p-4 rounded bg-secondary border-start border-4 border-info shadow-sm">
+                    <h6 class="fw-bold text-info mb-3">
+                        <i class="bi-receipt me-2"></i>Ringkasan Pembayaran
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Total Item Service:</strong></p>
+                            <p class="mb-1"><strong>Biaya Lain:</strong></p>
+                            <p class="mb-1"><strong class="text-info">Total Keseluruhan:</strong></p>
+                            <p class="mb-1"><strong class="text-success">Sudah Dibayar:</strong></p>
+                            <p class="fw-bold text-danger mt-2"><i class="bi-receipt me-1"></i> Sisa Pembayaran:</p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <p class="mb-1">Rp {{ number_format($totalService, 0, ',', '.') }}</p>
+                            <p class="mb-1">Rp {{ number_format($otherCost, 0, ',', '.') }}</p>
+                            <p class="mb-1 text-info fw-bold">Rp {{ number_format($grandTotal, 0, ',', '.') }}</p>
+                            <p class="mb-1 text-success fw-bold">Rp {{ number_format($paid, 0, ',', '.') }}</p>
+                            <p class="text-danger fw-bold">Rp {{ number_format($remaining, 0, ',', '.') }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -101,7 +112,7 @@
             <div class="card bg-dark border-0 rounded-3 shadow-sm">
                 <div class="card-body">
                     <h6 class="fw-bold text-success mb-3">
-                        <i class="fa-solid fa-credit-card me-2"></i>Pembayaran Baru
+                        <i class="bi-receipt me-2"></i>Pembayaran Baru
                     </h6>
 
                     <div class="row">

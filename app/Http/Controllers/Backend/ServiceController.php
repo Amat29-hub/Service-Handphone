@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Models\ServiceDetail;
-use App\Models\Serviceitem;
-use App\Models\Customer;
+use App\Models\ServiceItem;
+use App\Models\User;
 use App\Models\Handphone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -27,26 +27,16 @@ class ServiceController extends Controller
      */
     public function create()
     {
-        // Ambil data pelanggan
-        $customers = \App\Models\User::where('role', 'customer')
-            ->orWhere('role', 'user')
-            ->get();
-    
-        // Ambil data handphone
-        $handphones = \App\Models\Handphone::all();
-    
-        // Ambil data teknisi
-        $technicians = \App\Models\User::where('role', 'technician')->get();
-    
-        // Ambil data service item (produk servis)
-        $products = \App\Models\ServiceItem::where('is_active', 'active')->get();
-    
+        $customers = User::whereIn('role', ['customer', 'user'])->get();
+        $handphones = Handphone::all();
+        $technicians = User::where('role', 'technician')->get();
+        $products = ServiceItem::where('is_active', 'active')->get();
+
         // Generate nomor invoice otomatis
-        $lastService = \App\Models\Service::latest('id')->first();
+        $lastService = Service::latest('id')->first();
         $nextId = $lastService ? $lastService->id + 1 : 1;
         $no_invoice = 'INV-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
-    
-        // Kirim semua data ke view
+
         return view('page.backend.service.create', compact(
             'customers',
             'handphones',
@@ -61,60 +51,51 @@ class ServiceController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi request
         $request->validate([
             'no_invoice' => 'required|unique:services,no_invoice',
             'customer_id' => 'required|exists:users,id',
-            'technician_id' => 'nullable|exists:users,id',
+            'technician_id' => 'required|exists:users,id',
             'handphone_id' => 'required|exists:handphones,id',
-            'damage_description' => 'nullable|string',
-            'status' => 'nullable|string|in:accepted,process,finished,taken,cancelled',
-            'products' => 'required|array',
+            'damage_description' => 'required|string',
+            'products' => 'required|array|min:1',
             'products.*' => 'exists:serviceitems,id',
-            'qty' => 'required|array',
-            'qty.*' => 'numeric|min:1',
-            'price' => 'required|array',
+            'price' => 'required|array|min:1',
             'price.*' => 'numeric|min:0',
             'other_cost' => 'nullable|numeric|min:0',
         ]);
     
-        // Hitung total biaya
-        $totalService = 0;
-        foreach ($request->products as $key => $productId) {
-            $subtotal = $request->qty[$key] * $request->price[$key];
-            $totalService += $subtotal;
-        }
-    
+        // Hitung total biaya service
+        $totalService = array_sum($request->price);
         $totalCost = $totalService + ($request->other_cost ?? 0);
     
-        // Simpan data service
+        // Simpan data service utama
         $service = \App\Models\Service::create([
             'no_invoice' => $request->no_invoice,
             'customer_id' => $request->customer_id,
             'technician_id' => $request->technician_id,
             'handphone_id' => $request->handphone_id,
             'damage_description' => $request->damage_description,
-            'status' => $request->status ?? 'accepted',
+            'status' => 'accepted',
             'total_cost' => $totalCost,
             'other_cost' => $request->other_cost ?? 0,
             'paid' => 0,
             'change' => 0,
             'status_paid' => 'unpaid',
-            'received_date' => $request->received_date ?? now(),
-            'completed_date' => $request->completed_date ?? null,
+            'received_date' => now(),
+            'completed_date' => null,
         ]);
     
-        // Simpan detail service
-        foreach ($request->products as $key => $productId) {
+        // Simpan detail service item
+        foreach ($request->products as $index => $productId) {
             $service->details()->create([
                 'serviceitem_id' => $productId,
-                'qty' => $request->qty[$key],
-                'price' => $request->price[$key],
-                'subtotal' => $request->qty[$key] * $request->price[$key],
+                'qty' => 1, // karena qty dihapus dari form
+                'price' => $request->price[$index],
+                'subtotal' => $request->price[$index],
             ]);
         }
     
-        return redirect()->route('service.index')->with('success', 'Transaksi service berhasil ditambahkan!');
+        return redirect()->route('service.index')->with('success', '✅ Transaksi service berhasil ditambahkan!');
     }
 
     /**
@@ -137,20 +118,10 @@ class ServiceController extends Controller
         ]);
 
         $service = Service::findOrFail($id);
-
         $total = $service->total_cost;
         $totalPaid = $service->paid + $request->paid;
 
-        // Tentukan status_paid otomatis
-        if ($totalPaid == 0) {
-            $statusPaid = 'unpaid';
-        } elseif ($totalPaid < $total) {
-            $statusPaid = 'debt';
-        } else {
-            $statusPaid = 'paid';
-        }
-
-        // Tentukan status otomatis berdasarkan kondisi pembayaran
+        $statusPaid = $totalPaid == 0 ? 'unpaid' : ($totalPaid < $total ? 'debt' : 'paid');
         $status = match ($statusPaid) {
             'paid' => 'finished',
             'debt' => 'process',
@@ -174,24 +145,29 @@ class ServiceController extends Controller
     public function destroy($id)
     {
         $service = Service::findOrFail($id);
-        $service->delete();
 
+        // Cegah bug: jangan hapus jika ini satu-satunya service terkait produk
+        $remainingProducts = ServiceItem::count();
+        if ($remainingProducts <= 1) {
+            return redirect()->back()->with('error', 'Tidak dapat menghapus produk terakhir untuk mencegah bug!');
+        }
+
+        $service->delete();
         return redirect()->route('service.index')->with('success', '🗑️ Data service berhasil dihapus!');
     }
 
     /**
-     * Tampilkan detail transaksi service
+     * Tampilkan detail transaksi service.
      */
     public function show($id)
     {
-        // Ambil service beserta relasi customer, technician, handphone, dan detail->serviceitem
         $service = Service::with([
             'customer',
             'technician',
             'handphone',
-            'details.serviceitem' // relasi pivot untuk qty, price, subtotal
+            'details.serviceitem'
         ])->findOrFail($id);
-    
+
         return view('page.backend.service.show', compact('service'));
     }
 }
