@@ -21,22 +21,22 @@
                 <strong>Handphone:</strong> {{ $service->handphone->brand ?? '-' }} {{ $service->handphone->model ?? '' }}
             </div>
             <div class="col-md-4 mb-2">
-                <strong>Status:</strong> 
-                <span class="badge 
-                    @if($service->status == 'accepted') bg-primary 
-                    @elseif($service->status == 'process') bg-warning 
-                    @elseif($service->status == 'finished') bg-success 
-                    @elseif($service->status == 'taken') bg-info 
-                    @elseif($service->status == 'cancelled') bg-danger 
+                <strong>Status:</strong>
+                <span class="badge
+                    @if($service->status == 'accepted') bg-primary
+                    @elseif($service->status == 'process') bg-warning
+                    @elseif($service->status == 'finished') bg-success
+                    @elseif($service->status == 'taken') bg-info
+                    @elseif($service->status == 'cancelled') bg-danger
                     @else bg-secondary @endif">
                     {{ ucfirst($service->status) }}
                 </span>
             </div>
             <div class="col-md-4 mb-2">
-                <strong>Status Pembayaran:</strong> 
-                <span class="badge 
-                    @if($service->status_paid == 'paid') bg-success 
-                    @elseif($service->status_paid == 'debt') bg-warning 
+                <strong>Status Pembayaran:</strong>
+                <span class="badge
+                    @if($service->status_paid == 'paid') bg-success
+                    @elseif($service->status_paid == 'debt') bg-warning
                     @else bg-danger @endif">
                     {{ ucfirst($service->status_paid) }}
                 </span>
@@ -85,6 +85,20 @@
             <strong>Keterangan Kerusakan:</strong>
             <p>{{ $service->damage_description ?? '-' }}</p>
         </div>
+
+        <div class="d-flex justify-content-end mt-4">
+            {{-- Tombol Cancel --}}
+            @if($service->status_paid != 'paid' && $service->status != 'finished' && $service->status != 'taken')
+                <form action="{{ route('service.cancel', $service->id) }}" method="POST"
+                    onsubmit="return confirm('Yakin ingin membatalkan service ini?')"
+                    class="ms-2">
+                    @csrf
+                    <button type="submit" class="btn btn-danger px-4 fw-bold shadow-sm">
+                        <i class="bi bi-x-circle me-2"></i> Batalkan Service
+                    </button>
+                </form>
+            @endif
+         </div>
 
         <a href="{{ route('service.index') }}" class="btn btn-primary mt-3">Kembali</a>
     </div>
