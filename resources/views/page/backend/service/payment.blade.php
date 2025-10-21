@@ -134,9 +134,9 @@
                     {{-- Status Pembayaran --}}
                     <div class="alert alert-dark border border-info p-3 mt-2">
                         <strong>Status Saat Ini:</strong>
-                        <span class="badge 
-                            @if($service->status_paid == 'paid') bg-success 
-                            @elseif($service->status_paid == 'debt') bg-warning 
+                        <span class="badge
+                            @if($service->status_paid == 'paid') bg-success
+                            @elseif($service->status_paid == 'debt') bg-warning
                             @else bg-danger @endif text-uppercase px-3 py-2">
                             {{ strtoupper($service->status_paid) }}
                         </span>

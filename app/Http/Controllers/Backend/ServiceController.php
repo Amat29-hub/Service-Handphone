@@ -63,11 +63,11 @@ class ServiceController extends Controller
             'price.*' => 'numeric|min:0',
             'other_cost' => 'nullable|numeric|min:0',
         ]);
-    
+
         // Hitung total biaya service
         $totalService = array_sum($request->price);
         $totalCost = $totalService + ($request->other_cost ?? 0);
-    
+
         // Simpan data service utama
         $service = \App\Models\Service::create([
             'no_invoice' => $request->no_invoice,
@@ -84,7 +84,7 @@ class ServiceController extends Controller
             'received_date' => now(),
             'completed_date' => null,
         ]);
-    
+
         // Simpan detail service item
         foreach ($request->products as $index => $productId) {
             $service->details()->create([
@@ -94,7 +94,7 @@ class ServiceController extends Controller
                 'subtotal' => $request->price[$index],
             ]);
         }
-    
+
         return redirect()->route('service.index')->with('success', '✅ Transaksi service berhasil ditambahkan!');
     }
 
@@ -170,4 +170,18 @@ class ServiceController extends Controller
 
         return view('page.backend.service.show', compact('service'));
     }
+
+    public function cancel($id)
+    {
+        $service = Service::findOrFail($id);
+
+        $service->update([
+            'status' => 'cancelled',
+            'status_paid' => 'unpaid',
+        ]);
+
+        return redirect()->route('service.index')
+                        ->with('success', 'Service berhasil dibatalkan.');
+    }
+
 }

@@ -72,7 +72,14 @@
                     @forelse ($recentServices as $index => $service)
                         <tr style="border: 1px solid #555;">
                             <td style="border: 1px solid #555;">{{ $index + 1 }}</td>
-                            <td style="border: 1px solid #555;">{{ \Carbon\Carbon::parse($service->received_date)->format('d M Y') }}</td>
+                            <td style="border: 1px solid #555;">
+                                <span class="text-info fw-semibold">
+                                    {{ \Carbon\Carbon::parse($service->received_date)->format('d M Y') }}
+                                </span>
+                                <small class="d-block text-muted">
+                                    {{ \Carbon\Carbon::parse($service->received_date)->diffForHumans() }}
+                                </small>
+                            </td>
                             <td class="fw-bold text-info" style="border: 1px solid #555;">{{ $service->no_invoice }}</td>
                             <td class="text-white" style="border: 1px solid #555;">{{ $service->customer->name ?? '-' }}</td>
                             <td class="fw-bold text-success" style="border: 1px solid #555;">
