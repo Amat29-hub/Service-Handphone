@@ -121,9 +121,12 @@ class ServiceController extends Controller
         $total = $service->total_cost;
         $totalPaid = $service->paid + $request->paid;
 
+        // Tentukan status_paid
         $statusPaid = $totalPaid == 0 ? 'unpaid' : ($totalPaid < $total ? 'debt' : 'paid');
+
+        // Jika lunas -> finished (bukan taken). Kalau cicil -> process. Kalau 0 -> tetap status sebelumnya.
         $status = match ($statusPaid) {
-            'paid' => 'taken', // 👈 ubah dari finished jadi taken
+            'paid' => 'finished',
             'debt' => 'process',
             default => $service->status,
         };
@@ -133,11 +136,13 @@ class ServiceController extends Controller
             'status_paid' => $statusPaid,
             'status' => $status,
             'paymentmethod' => $request->paymentmethod,
-            'completed_date' => $status === 'taken' ? now() : $service->completed_date,
+            // set completed_date saat status finished (opsional)
+            'completed_date' => $status === 'finished' ? now() : $service->completed_date,
         ]);
 
         return redirect()->route('service.index')->with('success', '✅ Pembayaran berhasil! Status: ' . strtoupper($statusPaid));
     }
+
 
     /**
      * Hapus data service dan semua detail terkait.
@@ -188,17 +193,17 @@ class ServiceController extends Controller
     {
         $service = Service::findOrFail($id);
 
+        // Hanya boleh diambil kalau sudah lunas dan status finished
         if ($service->status_paid === 'paid' && $service->status === 'finished') {
             $service->update([
                 'status' => 'taken',
+                // opsional: catat kapan diambil
+                'taken_date' => now(),
             ]);
 
-            return redirect()->route('service.index')
-                            ->with('success', '📦 Barang telah diambil oleh pelanggan.');
+            return redirect()->route('service.index')->with('success', '📦 Barang telah diambil pelanggan.');
         }
 
-        return redirect()->back()->with('error', '❌ Barang belum bisa diambil. Pastikan service sudah lunas dan selesai.');
+        return redirect()->back()->with('error', '❌ Barang belum bisa diambil. Pastikan service sudah selesai dan lunas.');
     }
-
-
 }
