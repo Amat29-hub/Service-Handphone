@@ -57,9 +57,9 @@
 
                             {{-- Status Bayar --}}
                             <td style="border: 1px solid #555;">
-                                <span class="badge 
-                                    @if($service->status_paid == 'paid') bg-success 
-                                    @elseif($service->status_paid == 'debt') bg-warning 
+                                <span class="badge
+                                    @if($service->status_paid == 'paid') bg-success
+                                    @elseif($service->status_paid == 'debt') bg-warning
                                     @else bg-danger @endif">
                                     {{ ucfirst($service->status_paid) }}
                                 </span>
@@ -74,20 +74,29 @@
                             <td style="border: 1px solid #555;">
                                 <div class="d-flex gap-2 flex-wrap justify-content-center">
                                     {{-- Detail --}}
-                                    <a href="{{ route('service.show', $service->id) }}" 
+                                    <a href="{{ route('service.show', $service->id) }}"
                                        class="btn btn-info btn-sm flex-fill">
                                         <i class="bi bi-eye"></i> Detail
                                     </a>
 
                                     {{-- Payment --}}
-                                    <a href="{{ route('service.payment', $service->id) }}" 
-                                       class="btn btn-success btn-sm flex-fill">
-                                        💰 Bayar
-                                    </a>
+                                    @if($service->status_paid != 'paid' && $service->status != 'cancelled')
+                                        <a href="{{ route('service.payment', $service->id) }}"
+                                        class="btn btn-success btn-sm flex-fill">
+                                            💰 Bayar
+                                        </a>
+                                    @endif
+
+                                    {{-- Jika sudah paid dan status taken --}}
+                                    @if($service->status == 'taken')
+                                        <span class="btn btn-outline-info btn-sm flex-fill disabled">
+                                            ✅ Barang Diambil
+                                        </span>
+                                    @endif
 
                                     {{-- Hapus --}}
-                                    <form action="{{ route('service.destroy', $service->id) }}" 
-                                          method="POST" 
+                                    <form action="{{ route('service.destroy', $service->id) }}"
+                                          method="POST"
                                           class="flex-fill m-0 p-0"
                                           onsubmit="return confirm('Yakin ingin menghapus transaksi ini?')">
                                         @csrf

@@ -47,4 +47,5 @@ Route::middleware('auth')->group(function () {
     Route::post('/service/{id}/payment', [ServiceController::class, 'processPayment'])->name('service.payment.process');
     Route::get('/service/{id}/cetak-struk', [ServiceController::class, 'cetakStruk'])->name('service.cetakStruk');
     Route::post('/service/{id}/cancel', [ServiceController::class, 'cancel'])->name('service.cancel');
+    Route::patch('/service/{id}/take', [ServiceController::class, 'take'])->name('service.take');
 });
