@@ -101,15 +101,14 @@
 
             {{-- Tombol Ambil Barang --}}
             @if($service->status_paid == 'paid' && $service->status == 'finished')
-                <form action="{{ route('service.take', $service->id) }}" method="POST" class="mt-4">
+                <form action="{{ route('service.take', $service->id) }}" method="POST" class="ms-2">
                     @csrf
                     @method('PATCH')
-                    <button type="submit" class="btn btn-info fw-bold px-4">
-                        📦 Ambil Barang
+                    <button type="submit" class="btn btn-info px-4 fw-bold shadow-sm">
+                        <i class="bi bi-box-seam me-2"></i> Ambil Barang
                     </button>
                 </form>
             @endif
-
          </div>
 
         <a href="{{ route('service.index') }}" class="btn btn-primary mt-3">Kembali</a>

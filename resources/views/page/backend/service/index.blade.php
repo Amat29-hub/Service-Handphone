@@ -81,10 +81,7 @@
 
                                     {{-- Payment --}}
                                     @if($service->status_paid != 'paid' && $service->status != 'cancelled')
-                                        <a href="{{ route('service.payment', $service->id) }}"
-                                        class="btn btn-success btn-sm flex-fill">
-                                            💰 Bayar
-                                        </a>
+                                        <a href="{{ route('service.payment', $service->id) }}" class="btn btn-success btn-sm flex-fill">💰 Bayar</a>
                                     @endif
 
                                     {{-- Jika sudah paid dan status taken --}}
