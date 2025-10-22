@@ -123,7 +123,7 @@ class ServiceController extends Controller
 
         $statusPaid = $totalPaid == 0 ? 'unpaid' : ($totalPaid < $total ? 'debt' : 'paid');
         $status = match ($statusPaid) {
-            'paid' => 'finished',
+            'paid' => 'taken', // 👈 ubah dari finished jadi taken
             'debt' => 'process',
             default => $service->status,
         };
@@ -133,7 +133,7 @@ class ServiceController extends Controller
             'status_paid' => $statusPaid,
             'status' => $status,
             'paymentmethod' => $request->paymentmethod,
-            'completed_date' => $status === 'finished' ? now() : $service->completed_date,
+            'completed_date' => $status === 'taken' ? now() : $service->completed_date,
         ]);
 
         return redirect()->route('service.index')->with('success', '✅ Pembayaran berhasil! Status: ' . strtoupper($statusPaid));
@@ -183,5 +183,22 @@ class ServiceController extends Controller
         return redirect()->route('service.index')
                         ->with('success', 'Service berhasil dibatalkan.');
     }
+
+    public function take($id)
+    {
+        $service = Service::findOrFail($id);
+
+        if ($service->status_paid === 'paid' && $service->status === 'finished') {
+            $service->update([
+                'status' => 'taken',
+            ]);
+
+            return redirect()->route('service.index')
+                            ->with('success', '📦 Barang telah diambil oleh pelanggan.');
+        }
+
+        return redirect()->back()->with('error', '❌ Barang belum bisa diambil. Pastikan service sudah lunas dan selesai.');
+    }
+
 
 }
