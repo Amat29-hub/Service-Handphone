@@ -88,10 +88,15 @@
 
         <div class="d-flex justify-content-end mt-4">
             {{-- Tombol Cancel --}}
-            @if($service->status_paid != 'paid' && $service->status != 'finished' && $service->status != 'taken')
+            @if(
+                $service->status_paid != 'paid' &&
+                $service->status != 'finished' &&
+                $service->status != 'taken' &&
+                $service->status != 'cancelled'
+            )
                 <form action="{{ route('service.cancel', $service->id) }}" method="POST"
-                    onsubmit="return confirm('Yakin ingin membatalkan service ini?')"
-                    class="ms-2">
+                      onsubmit="return confirm('Yakin ingin membatalkan service ini?')"
+                      class="ms-2">
                     @csrf
                     <button type="submit" class="btn btn-danger px-4 fw-bold shadow-sm">
                         <i class="bi bi-x-circle me-2"></i> Batalkan Service
