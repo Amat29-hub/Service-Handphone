@@ -16,6 +16,9 @@ return new class extends Migration
             $table->year('release_year')->nullable();
             $table->enum('is_active', ['active', 'nonactive'])->default('active');
             $table->timestamps();
+
+            // 🔒 Tambahkan constraint unik
+            $table->unique(['brand', 'model'], 'unique_brand_model');
         });
     }
 

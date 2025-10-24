@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceItem;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ServiceItemController extends Controller
 {
@@ -31,9 +32,16 @@ class ServiceItemController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'service_name' => 'required|string|max:255',
+            'service_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('serviceitems', 'service_name'),
+            ],
             'price' => 'required|numeric|min:0',
             'is_active' => 'required|in:active,nonactive',
+        ], [
+            'service_name.unique' => 'Nama service sudah terdaftar.',
         ]);
 
         ServiceItem::create($validated);
@@ -63,9 +71,16 @@ class ServiceItemController extends Controller
     public function update(Request $request, ServiceItem $serviceitem)
     {
         $validated = $request->validate([
-            'service_name' => 'required|string|max:255',
+            'service_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('service_items', 'service_name')->ignore($serviceitem->id),
+            ],
             'price' => 'required|numeric|min:0',
-            'is_active' => 'required|in:active,inactive',
+            'is_active' => 'required|in:active,nonactive',
+        ], [
+            'service_name.unique' => 'Nama service sudah terdaftar.',
         ]);
 
         $serviceitem->update($validated);
@@ -87,16 +102,15 @@ class ServiceItemController extends Controller
      */
     public function toggleStatus($id)
     {
-        $item = \App\Models\ServiceItem::find($id);
-    
+        $item = ServiceItem::find($id);
+
         if (!$item) {
             return response()->json(['success' => false, 'message' => 'Data tidak ditemukan!'], 404);
         }
-    
-        // Sesuaikan dengan enum di database
+
         $item->is_active = $item->is_active === 'active' ? 'nonactive' : 'active';
         $item->save();
-    
+
         return response()->json([
             'success' => true,
             'is_active' => $item->is_active,

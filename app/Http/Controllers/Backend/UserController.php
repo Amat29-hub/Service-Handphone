@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -23,24 +24,38 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'name'       => 'required|string|max:255',
-            'email'      => 'required|email|unique:users,email',
+            'email'      => [
+                'required',
+                'email',
+                Rule::unique('users')->where(function ($query) use ($request) {
+                    return $query->where('name', $request->name);
+                }),
+            ],
             'password'   => 'required|string|min:6',
             'role'       => 'required|in:admin,technician,customer',
             'is_active'  => 'required|in:active,nonactive',
             'image'      => 'nullable|image|max:2048',
+        ], [
+            'email.unique' => 'Kombinasi nama dan email sudah digunakan pengguna lain.',
         ]);
 
+        $data = $request->only(['name', 'email', 'role', 'is_active']);
+        $data['password'] = Hash::make($request->password);
+
         if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('users', 'public');
+            $data['image'] = $request->file('image')->store('users', 'public');
         }
 
-        $validated['password'] = Hash::make($validated['password']);
-
-        User::create($validated);
+        User::create($data);
 
         return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan!');
+    }
+
+    public function show(User $user)
+    {
+        return view('page.backend.user.show', compact('user'));
     }
 
     public function edit(User $user)
@@ -50,36 +65,39 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        $validated = $request->validate([
+        $request->validate([
             'name'       => 'required|string|max:255',
-            'email'      => 'required|email|unique:users,email,' . $user->id,
+            'email'      => [
+                'required',
+                'email',
+                Rule::unique('users')->ignore($user->id)->where(function ($query) use ($request) {
+                    return $query->where('name', $request->name);
+                }),
+            ],
             'role'       => 'required|in:admin,technician,customer',
             'is_active'  => 'required|in:active,nonactive',
             'image'      => 'nullable|image|max:2048',
             'password'   => 'nullable|string|min:6',
+        ], [
+            'email.unique' => 'Kombinasi nama dan email sudah digunakan pengguna lain.',
         ]);
+
+        $data = $request->only(['name', 'email', 'role', 'is_active']);
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
 
         if ($request->hasFile('image')) {
             if ($user->image && Storage::disk('public')->exists($user->image)) {
                 Storage::disk('public')->delete($user->image);
             }
-            $validated['image'] = $request->file('image')->store('users', 'public');
+            $data['image'] = $request->file('image')->store('users', 'public');
         }
 
-        if (!empty($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
-        }
-
-        $user->update($validated);
+        $user->update($data);
 
         return redirect()->route('users.index')->with('success', 'User berhasil diperbarui!');
-    }
-
-    public function show(User $user)
-    {
-        return view('page.backend.user.show', compact('user'));
     }
 
     public function destroy(User $user)
@@ -93,11 +111,15 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User berhasil dihapus!');
     }
 
-    public function toggleStatus($id)
+    public function toggleStatus(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        $user->is_active = $user->is_active === 'active' ? 'nonactive' : 'active';
-        $user->save();
+
+        $request->validate([
+            'is_active' => 'required|in:active,nonactive',
+        ]);
+
+        $user->update(['is_active' => $request->is_active]);
 
         return response()->json([
             'success' => true,

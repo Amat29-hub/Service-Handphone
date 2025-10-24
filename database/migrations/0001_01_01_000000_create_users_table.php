@@ -11,13 +11,16 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('email');
             $table->string('password');
             $table->string('role')->default('user');
             $table->string('image')->nullable();
             $table->enum('is_active', ['active', 'nonactive'])->default('active');
             $table->rememberToken();
             $table->timestamps();
+
+            // Unique gabungan name + email
+            $table->unique(['name', 'email'], 'unique_name_email');
         });
     }
 
