@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Handphone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class HandphoneController extends Controller
 {
@@ -23,21 +24,31 @@ class HandphoneController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'brand' => 'required|string|max:255',
-            'model' => 'required|string|max:255',
+            'brand' => ['required', 'string', 'max:255'],
+            'model' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('handphones')->where(function ($query) use ($request) {
+                    return $query->where('brand', $request->brand)
+                                 ->where('model', $request->model);
+                }),
+            ],
             'release_year' => 'nullable|integer',
             'image' => 'nullable|image|max:2048',
-            'is_active' => 'required|in:active,nonactive', // tambahkan validasi
+            'is_active' => 'required|in:active,nonactive',
+        ], [
+            'model.unique' => 'Kombinasi brand dan model sudah terdaftar.',
         ]);
-    
-        $data = $request->only(['brand', 'model', 'release_year', 'is_active']); // ambil status dari form
-    
+
+        $data = $request->only(['brand', 'model', 'release_year', 'is_active']);
+
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('handphones', 'public');
         }
-    
+
         Handphone::create($data);
-    
+
         return redirect()->route('handphone.index')->with('success', 'Handphone berhasil ditambahkan!');
     }
 
@@ -54,10 +65,20 @@ class HandphoneController extends Controller
     public function update(Request $request, Handphone $handphone)
     {
         $request->validate([
-            'brand' => 'required|string|max:255',
-            'model' => 'required|string|max:255',
+            'brand' => ['required', 'string', 'max:255'],
+            'model' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('handphones')->ignore($handphone->id)->where(function ($query) use ($request) {
+                    return $query->where('brand', $request->brand)
+                                 ->where('model', $request->model);
+                }),
+            ],
             'release_year' => 'nullable|integer',
             'image' => 'nullable|image|max:2048',
+        ], [
+            'model.unique' => 'Kombinasi brand dan model sudah terdaftar.',
         ]);
 
         $data = $request->only(['brand', 'model', 'release_year']);
@@ -69,7 +90,6 @@ class HandphoneController extends Controller
             $data['image'] = $request->file('image')->store('handphones', 'public');
         }
 
-        // Update status jika dikirim dari form edit
         if ($request->has('is_active')) {
             $data['is_active'] = $request->is_active;
         }
@@ -90,9 +110,6 @@ class HandphoneController extends Controller
         return redirect()->route('handphone.index')->with('success', 'Handphone berhasil dihapus!');
     }
 
-    /**
-     * Toggle status active/nonactive via index checkbox
-     */
     public function toggleStatus(Request $request, $id)
     {
         $handphone = Handphone::findOrFail($id);
