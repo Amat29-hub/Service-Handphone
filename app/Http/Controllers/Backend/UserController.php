@@ -13,7 +13,8 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::latest()->get();
+        // Menampilkan semua user termasuk yang terhapus
+        $users = User::withTrashed()->latest()->get();
         return view('page.backend.user.index', compact('users'));
     }
 
@@ -37,8 +38,6 @@ class UserController extends Controller
             'role'       => 'required|in:admin,technician,customer',
             'is_active'  => 'required|in:active,nonactive',
             'image'      => 'nullable|image|max:2048',
-        ], [
-            'email.unique' => 'Kombinasi nama dan email sudah digunakan pengguna lain.',
         ]);
 
         $data = $request->only(['name', 'email', 'role', 'is_active']);
@@ -78,8 +77,6 @@ class UserController extends Controller
             'is_active'  => 'required|in:active,nonactive',
             'image'      => 'nullable|image|max:2048',
             'password'   => 'nullable|string|min:6',
-        ], [
-            'email.unique' => 'Kombinasi nama dan email sudah digunakan pengguna lain.',
         ]);
 
         $data = $request->only(['name', 'email', 'role', 'is_active']);
@@ -100,15 +97,30 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User berhasil diperbarui!');
     }
 
-    public function destroy(User $user)
+    public function destroy($id)
     {
-        if ($user->image && Storage::disk('public')->exists($user->image)) {
-            Storage::disk('public')->delete($user->image);
+        $user = User::withTrashed()->findOrFail($id);
+
+        if ($user->trashed()) {
+            // Jika sudah di-soft delete, hapus permanen + hapus file gambar
+            if ($user->image && Storage::disk('public')->exists($user->image)) {
+                Storage::disk('public')->delete($user->image);
+            }
+            $user->forceDelete();
+            return redirect()->route('users.index')->with('success', 'User dihapus permanen!');
+        } else {
+            // Soft delete
+            $user->delete();
+            return redirect()->route('users.index')->with('success', 'User berhasil dihapus (soft delete)!');
         }
+    }
 
-        $user->delete();
+    public function restore($id)
+    {
+        $user = User::withTrashed()->findOrFail($id);
+        $user->restore();
 
-        return redirect()->route('users.index')->with('success', 'User berhasil dihapus!');
+        return redirect()->route('users.index')->with('success', 'User berhasil direstore!');
     }
 
     public function toggleStatus(Request $request, $id)

@@ -10,11 +10,11 @@ use Illuminate\Validation\Rule;
 class ServiceItemController extends Controller
 {
     /**
-     * Tampilkan semua service item.
+     * Tampilkan semua service item (termasuk yang dihapus).
      */
     public function index()
     {
-        $serviceitems = ServiceItem::latest()->get();
+        $serviceitems = ServiceItem::withTrashed()->latest()->get();
         return view('page.backend.serviceitem.index', compact('serviceitems'));
     }
 
@@ -27,7 +27,7 @@ class ServiceItemController extends Controller
     }
 
     /**
-     * Simpan data service item baru.
+     * Simpan data baru.
      */
     public function store(Request $request)
     {
@@ -40,17 +40,14 @@ class ServiceItemController extends Controller
             ],
             'price' => 'required|numeric|min:0',
             'is_active' => 'required|in:active,nonactive',
-        ], [
-            'service_name.unique' => 'Nama service sudah terdaftar.',
         ]);
 
         ServiceItem::create($validated);
-
         return redirect()->route('serviceitem.index')->with('success', 'Service item berhasil ditambahkan.');
     }
 
     /**
-     * Tampilkan detail service item.
+     * Tampilkan detail.
      */
     public function show(ServiceItem $serviceitem)
     {
@@ -58,7 +55,7 @@ class ServiceItemController extends Controller
     }
 
     /**
-     * Form edit service item.
+     * Form edit.
      */
     public function edit(ServiceItem $serviceitem)
     {
@@ -66,7 +63,7 @@ class ServiceItemController extends Controller
     }
 
     /**
-     * Update data service item.
+     * Update data.
      */
     public function update(Request $request, ServiceItem $serviceitem)
     {
@@ -75,30 +72,55 @@ class ServiceItemController extends Controller
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('service_items', 'service_name')->ignore($serviceitem->id),
+                Rule::unique('serviceitems', 'service_name')->ignore($serviceitem->id),
             ],
             'price' => 'required|numeric|min:0',
             'is_active' => 'required|in:active,nonactive',
-        ], [
-            'service_name.unique' => 'Nama service sudah terdaftar.',
         ]);
 
         $serviceitem->update($validated);
-
         return redirect()->route('serviceitem.index')->with('success', 'Service item berhasil diperbarui.');
     }
 
     /**
-     * Hapus service item.
+     * Soft delete (hapus sementara).
      */
-    public function destroy(ServiceItem $serviceitem)
+    public function destroy($id)
     {
-        $serviceitem->delete();
-        return redirect()->route('serviceitem.index')->with('success', 'Service item berhasil dihapus.');
+        $item = ServiceItem::withTrashed()->findOrFail($id);
+
+        if ($item->trashed()) {
+            // Jika sudah dihapus, hapus permanen
+            $item->forceDelete();
+            return redirect()->route('serviceitem.index')->with('success', 'Service item dihapus permanen.');
+        } else {
+            $item->delete();
+            return redirect()->route('serviceitem.index')->with('success', 'Service item berhasil dihapus (soft delete).');
+        }
     }
 
     /**
-     * Toggle status aktif / tidak aktif.
+     * Restore dari soft delete.
+     */
+    public function restore($id)
+    {
+        $item = ServiceItem::onlyTrashed()->findOrFail($id);
+        $item->restore();
+        return redirect()->route('serviceitem.index')->with('success', 'Service item berhasil direstore.');
+    }
+
+    /**
+     * Force delete permanen.
+     */
+    public function forceDelete($id)
+    {
+        $item = ServiceItem::onlyTrashed()->findOrFail($id);
+        $item->forceDelete();
+        return redirect()->route('serviceitem.index')->with('success', 'Service item berhasil dihapus permanen.');
+    }
+
+    /**
+     * Toggle status aktif/nonaktif.
      */
     public function toggleStatus($id)
     {

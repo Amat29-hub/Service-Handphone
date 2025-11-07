@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('service_name');
             $table->decimal('price', 10, 2)->default(0);
             $table->enum('is_active', ['active', 'nonactive'])->default('active');
+            $table->softDeletes(); // 👈 soft delete
             $table->timestamps();
         });
     }
