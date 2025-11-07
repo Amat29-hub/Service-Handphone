@@ -26,26 +26,46 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 */
 Route::middleware('auth')->group(function () {
 
-    // Dashboard
+    // 🏠 Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Users
+    /*
+    |--------------------------------------------------------------------------
+    | 👤 Users
+    |--------------------------------------------------------------------------
+    */
     Route::resource('users', UserController::class);
     Route::patch('users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::patch('users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
 
-    // Handphone
+    /*
+    |--------------------------------------------------------------------------
+    | 📱 Handphone
+    |--------------------------------------------------------------------------
+    */
     Route::resource('handphone', HandphoneController::class);
     Route::patch('handphone/{id}/toggle-status', [HandphoneController::class, 'toggleStatus'])->name('handphone.toggle-status');
+    Route::patch('handphone/{id}/restore', [HandphoneController::class, 'restore'])->name('handphone.restore');
+    Route::delete('handphone/{id}/force-delete', [HandphoneController::class, 'forceDelete'])->name('handphone.force-delete');
 
-    // Service Item
+    /*
+    |--------------------------------------------------------------------------
+    | ⚙️ Service Item
+    |--------------------------------------------------------------------------
+    */
     Route::resource('serviceitem', ServiceItemController::class);
     Route::patch('serviceitem/{id}/toggle-status', [ServiceItemController::class, 'toggleStatus'])->name('serviceitem.toggle-status');
+    Route::patch('serviceitem/{id}/restore', [ServiceItemController::class, 'restore'])->name('serviceitem.restore');
+    Route::delete('serviceitem/{id}/force-delete', [ServiceItemController::class, 'forceDelete'])->name('serviceitem.force-delete');
 
-    // Service
+    /*
+    |--------------------------------------------------------------------------
+    | 🔧 Service
+    |--------------------------------------------------------------------------
+    */
     Route::resource('service', ServiceController::class);
-    Route::get('/service/{id}/payment', [ServiceController::class, 'payment'])->name('service.payment');
-    Route::post('/service/{id}/payment', [ServiceController::class, 'processPayment'])->name('service.payment.process');
-    Route::get('/service/{id}/cetak-struk', [ServiceController::class, 'cetakStruk'])->name('service.cetakStruk');
-    Route::post('/service/{id}/cancel', [ServiceController::class, 'cancel'])->name('service.cancel');
-    Route::patch('/service/{id}/take', [ServiceController::class, 'take'])->name('service.take');
+    Route::get('service/{id}/payment', [ServiceController::class, 'payment'])->name('service.payment');
+    Route::post('service/{id}/payment', [ServiceController::class, 'processPayment'])->name('service.payment.process');
+    Route::post('service/{id}/cancel', [ServiceController::class, 'cancel'])->name('service.cancel');
+    Route::patch('service/{id}/take', [ServiceController::class, 'take'])->name('service.take');
 });

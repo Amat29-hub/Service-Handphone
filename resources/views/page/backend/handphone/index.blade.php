@@ -25,12 +25,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($handphones as $index => $item)
+                    @forelse ($handphones as $index => $handphone)
                         <tr style="border: 1px solid #555;">
                             <td style="border: 1px solid #555;">{{ $index + 1 }}</td>
                             <td style="border: 1px solid #555;">
-                                @if($item->image)
-                                    <img src="{{ asset('storage/' . $item->image) }}"
+                                @if($handphone->image)
+                                    <img src="{{ asset('storage/' . $handphone->image) }}"
                                          alt="Image"
                                          width="80" height="80"
                                          class="rounded border border-2 border-primary shadow-sm"
@@ -39,44 +39,72 @@
                                     <span class="text-muted">No Image</span>
                                 @endif
                             </td>
-                            <td class="text-white" style="border: 1px solid #555;">{{ $item->brand }}</td>
-                            <td class="text-white" style="border: 1px solid #555;">{{ $item->model }}</td>
                             <td class="text-white" style="border: 1px solid #555;">
-                                {{ $item->release_year ?? '-' }}
+                                {{ $handphone->brand }}
+                                @if($handphone->trashed())
+                                    <span class="badge bg-danger ms-2">Deleted</span>
+                                @endif
                             </td>
+                            <td class="text-white" style="border: 1px solid #555;">{{ $handphone->model }}</td>
+                            <td class="text-white" style="border: 1px solid #555;">{{ $handphone->release_year ?? '-' }}</td>
                             <td style="border: 1px solid #555;">
-                                <div class="form-check form-switch d-flex justify-content-center">
-                                    <input 
-                                        class="form-check-input bg-primary border-0 toggle-status"
-                                        type="checkbox"
-                                        id="statusSwitch{{ $item->id }}"
-                                        data-id="{{ $item->id }}"
-                                        {{ $item->is_active === 'active' ? 'checked' : '' }}>
-                                </div>
+                                @if(!$handphone->trashed())
+                                    <div class="form-check form-switch d-flex justify-content-center">
+                                        <input 
+                                            class="form-check-input bg-primary border-0 toggle-status" 
+                                            type="checkbox"
+                                            id="statusSwitch{{ $handphone->id }}"
+                                            {{ $handphone->is_active === 'active' ? 'checked' : '' }}
+                                            onchange="toggleStatus({{ $handphone->id }})">
+                                    </div>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
                             </td>
                             <td style="border: 1px solid #555;">
                                 <div class="d-flex gap-2 flex-wrap justify-content-center">
-                                    {{-- Detail --}}
-                                    <a href="{{ route('handphone.show', $item->id) }}" class="btn btn-info btn-sm flex-fill">
-                                        <i class="bi bi-eye"></i> Detail
-                                    </a>
+                                    @if($handphone->trashed())
+                                        {{-- 🔄 Restore --}}
+                                        <form action="{{ route('handphone.restore', $handphone->id) }}" method="POST">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="btn btn-success btn-sm flex-fill">
+                                                <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                            </button>
+                                        </form>
 
-                                    {{-- Edit --}}
-                                    <a href="{{ route('handphone.edit', $item->id) }}" class="btn btn-warning btn-sm flex-fill">
-                                        <i class="bi bi-pencil-square"></i> Edit
-                                    </a>
+                                        {{-- ❌ Hapus Permanen --}}
+                                        <form action="{{ route('handphone.force-delete', $handphone->id) }}" method="POST" 
+                                              onsubmit="return confirm('Hapus permanen handphone ini?')" class="flex-fill m-0 p-0">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm w-100">
+                                                <i class="bi bi-trash"></i> Hapus Permanen
+                                            </button>
+                                        </form>
+                                    @else
+                                        {{-- 👁️ Detail --}}
+                                        <a href="{{ route('handphone.show', $handphone->id) }}" class="btn btn-info btn-sm flex-fill">
+                                            <i class="bi bi-eye"></i> Detail
+                                        </a>
 
-                                    {{-- Hapus --}}
-                                    <form action="{{ route('handphone.destroy', $item->id) }}" 
-                                          method="POST" 
-                                          class="flex-fill m-0 p-0"
-                                          onsubmit="return confirm('Yakin ingin menghapus data ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm w-100">
-                                            <i class="bi bi-trash"></i> Hapus
-                                        </button>
-                                    </form>
+                                        {{-- ✏️ Edit --}}
+                                        <a href="{{ route('handphone.edit', $handphone->id) }}" class="btn btn-warning btn-sm flex-fill">
+                                            <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
+
+                                        {{-- 🗑️ Soft Delete --}}
+                                        <form action="{{ route('handphone.destroy', $handphone->id) }}" 
+                                              method="POST" 
+                                              class="flex-fill m-0 p-0"
+                                              onsubmit="return confirm('Yakin ingin menghapus handphone ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm w-100">
+                                                <i class="bi bi-trash"></i> Hapus
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -93,40 +121,36 @@
     </div>
 </div>
 
-<!-- Tombol Back to Top -->
 <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top">
     <i class="bi bi-arrow-up"></i>
 </a>
 
 <script>
-    document.querySelectorAll('.toggle-status').forEach(toggle => {
-        toggle.addEventListener('change', function() {
-            const id = this.dataset.id;
-            const newStatus = this.checked ? 'active' : 'nonactive';
+    function toggleStatus(id) {
+        const checkbox = document.getElementById(`statusSwitch${id}`);
+        const newStatus = checkbox.checked ? 'active' : 'nonactive';
 
-            fetch(`/handphone/${id}/toggle-status`, {
-                method: 'PATCH',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ is_active: newStatus })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (!data.success) {
-                    alert('Gagal memperbarui status.');
-                    this.checked = !this.checked; // revert jika gagal
-                }
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                alert('Terjadi kesalahan, cek console/log server.');
-                this.checked = !this.checked; // revert jika error
-            });
+        fetch(`/handphone/${id}/toggle-status`, {
+            method: 'PATCH',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ is_active: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                checkbox.checked = !checkbox.checked;
+                alert('Gagal mengubah status handphone!');
+            }
+        })
+        .catch(() => {
+            checkbox.checked = !checkbox.checked;
+            alert('Terjadi kesalahan!');
         });
-    });
+    }
 </script>
 
 <style>
@@ -135,7 +159,6 @@
         transition: background-color 0.2s ease;
     }
 
-    /* Toggle switch modern seperti index user */
     .form-check-input.bg-primary {
         cursor: pointer;
         width: 50px;

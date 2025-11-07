@@ -12,7 +12,7 @@ class HandphoneController extends Controller
 {
     public function index()
     {
-        $handphones = Handphone::latest()->get();
+        $handphones = Handphone::withTrashed()->latest()->get();
         return view('page.backend.handphone.index', compact('handphones'));
     }
 
@@ -29,10 +29,7 @@ class HandphoneController extends Controller
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('handphones')->where(function ($query) use ($request) {
-                    return $query->where('brand', $request->brand)
-                                 ->where('model', $request->model);
-                }),
+                Rule::unique('handphones')->where(fn($q) => $q->where('brand', $request->brand)->where('model', $request->model)),
             ],
             'release_year' => 'nullable|integer',
             'image' => 'nullable|image|max:2048',
@@ -70,15 +67,10 @@ class HandphoneController extends Controller
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('handphones')->ignore($handphone->id)->where(function ($query) use ($request) {
-                    return $query->where('brand', $request->brand)
-                                 ->where('model', $request->model);
-                }),
+                Rule::unique('handphones')->ignore($handphone->id)->where(fn($q) => $q->where('brand', $request->brand)->where('model', $request->model)),
             ],
             'release_year' => 'nullable|integer',
             'image' => 'nullable|image|max:2048',
-        ], [
-            'model.unique' => 'Kombinasi brand dan model sudah terdaftar.',
         ]);
 
         $data = $request->only(['brand', 'model', 'release_year']);
@@ -99,32 +91,43 @@ class HandphoneController extends Controller
         return redirect()->route('handphone.index')->with('success', 'Handphone berhasil diperbarui!');
     }
 
-    public function destroy(Handphone $handphone)
+    public function destroy($id)
     {
+        $handphone = Handphone::findOrFail($id);
+        $handphone->delete();
+
+        return redirect()->route('handphone.index')->with('success', 'Handphone berhasil dihapus (soft delete)!');
+    }
+
+    public function restore($id)
+    {
+        $handphone = Handphone::withTrashed()->findOrFail($id);
+        $handphone->restore();
+
+        return redirect()->route('handphone.index')->with('success', 'Handphone berhasil direstore!');
+    }
+
+    public function forceDelete($id)
+    {
+        $handphone = Handphone::withTrashed()->findOrFail($id);
+
         if ($handphone->image && Storage::disk('public')->exists($handphone->image)) {
             Storage::disk('public')->delete($handphone->image);
         }
 
-        $handphone->delete();
+        $handphone->forceDelete();
 
-        return redirect()->route('handphone.index')->with('success', 'Handphone berhasil dihapus!');
+        return redirect()->route('handphone.index')->with('success', 'Handphone berhasil dihapus permanen!');
     }
 
     public function toggleStatus(Request $request, $id)
     {
         $handphone = Handphone::findOrFail($id);
 
-        $request->validate([
-            'is_active' => 'required|in:active,nonactive',
-        ]);
+        $request->validate(['is_active' => 'required|in:active,nonactive']);
 
-        $handphone->update([
-            'is_active' => $request->is_active
-        ]);
+        $handphone->update(['is_active' => $request->is_active]);
 
-        return response()->json([
-            'success' => true,
-            'is_active' => $handphone->is_active,
-        ]);
+        return response()->json(['success' => true, 'is_active' => $handphone->is_active]);
     }
 }

@@ -15,9 +15,10 @@ return new class extends Migration
             $table->string('model');
             $table->year('release_year')->nullable();
             $table->enum('is_active', ['active', 'nonactive'])->default('active');
+            $table->softDeletes(); // 👈 soft delete
             $table->timestamps();
 
-            // 🔒 Tambahkan constraint unik
+            // 🔒 Unik kombinasi brand + model
             $table->unique(['brand', 'model'], 'unique_brand_model');
         });
     }
