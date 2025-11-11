@@ -11,10 +11,32 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Menampilkan semua user termasuk yang terhapus
-        $users = User::withTrashed()->latest()->get();
+        // 🔍 Ambil parameter pencarian & filter dari request
+        $search = $request->input('search');
+        $role   = $request->input('role');
+    
+        // 🔧 Query dasar termasuk user yang di-soft delete
+        $query = \App\Models\User::withTrashed();
+    
+        // 🔎 Jika ada keyword pencarian
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+    
+        // 🎭 Jika ada filter role
+        if ($role) {
+            $query->where('role', $role);
+        }
+    
+        // 🔽 Urutkan dari yang terbaru
+        $users = $query->orderBy('id', 'desc')->get();
+    
+        // ✅ Arahkan ke view sesuai struktur kamu
         return view('page.backend.user.index', compact('users'));
     }
 

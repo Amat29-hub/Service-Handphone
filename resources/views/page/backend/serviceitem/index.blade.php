@@ -3,13 +3,43 @@
 @section('content')
 <div class="container-fluid pt-4 px-4">
     <div class="bg-secondary text-center rounded p-4 shadow-lg">
-        <div class="d-flex align-items-center justify-content-between mb-4">
+        <!-- Header -->
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
             <h5 class="mb-0 text-white fw-bold">🛠️ Tabel Service Item</h5>
-            <a href="{{ route('serviceitem.create') }}" class="btn btn-danger btn-sm">
-                <i class="bi bi-plus-circle"></i> Tambah
-            </a>
+
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                {{-- 🔍 Search --}}
+                <form action="{{ route('serviceitem.index') }}" method="GET" class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="input-group" style="width: 220px;">
+                        <button type="submit" 
+                                class="input-group-text border-0"
+                                style="background-color: #eb1616; cursor: pointer;">
+                            <i class="bi bi-search text-white"></i>
+                        </button>
+
+                        <input type="text" name="search"
+                               class="form-control bg-dark text-white border-0"
+                               style="border: 2px solid #eb1616;"
+                               placeholder="Cari nama service..."
+                               value="{{ request('search') }}">
+                    </div>
+
+                    {{-- Tombol Clear --}}
+                    @if(request('search'))
+                        <a href="{{ route('serviceitem.index') }}" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    @endif
+                </form>
+
+                {{-- ➕ Tambah --}}
+                <a href="{{ route('serviceitem.create') }}" class="btn btn-danger btn-sm">
+                    <i class="bi bi-plus-circle"></i> Tambah
+                </a>
+            </div>
         </div>
 
+        <!-- 📋 Tabel -->
         <div class="table-responsive">
             <table class="table table-dark align-middle text-center mb-0 table-hover"
                    style="border-collapse: collapse; border: 1px solid #555;">
@@ -26,15 +56,18 @@
                     @forelse ($serviceitems as $index => $item)
                         <tr style="border: 1px solid #555;">
                             <td style="border: 1px solid #555;">{{ $index + 1 }}</td>
+
                             <td class="text-white" style="border: 1px solid #555;">
                                 {{ $item->service_name }}
                                 @if($item->trashed())
                                     <span class="badge bg-danger ms-2">Deleted</span>
                                 @endif
                             </td>
+
                             <td class="text-white" style="border: 1px solid #555;">
                                 Rp{{ number_format($item->price, 0, ',', '.') }}
                             </td>
+
                             <td style="border: 1px solid #555;">
                                 @if(!$item->trashed())
                                     <div class="form-check form-switch d-flex justify-content-center">
@@ -150,7 +183,6 @@
         transition: background-color 0.2s ease;
     }
 
-    /* Toggle modern */
     .form-check-input.bg-primary {
         cursor: pointer;
         width: 50px;

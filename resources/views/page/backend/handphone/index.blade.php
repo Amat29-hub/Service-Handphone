@@ -3,13 +3,45 @@
 @section('content')
 <div class="container-fluid pt-4 px-4">
     <div class="bg-secondary text-center rounded p-4 shadow-lg">
-        <div class="d-flex align-items-center justify-content-between mb-4">
+        <!-- Header -->
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
             <h5 class="mb-0 text-white fw-bold">📱 Tabel Handphone</h5>
-            <a href="{{ route('handphone.create') }}" class="btn btn-danger btn-sm">
-                <i class="bi bi-plus-circle"></i> Tambah
-            </a>
+
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                {{-- 🔍 Search --}}
+                <form action="{{ route('handphone.index') }}" method="GET" class="d-flex align-items-center gap-2 flex-wrap">
+                    {{-- Input Search --}}
+                    <div class="input-group" style="width: 220px;">
+                        {{-- Tombol Search --}}
+                        <button type="submit" 
+                                class="input-group-text border-0"
+                                style="background-color: #eb1616; cursor: pointer;">
+                            <i class="bi bi-search text-white"></i>
+                        </button>
+
+                        <input type="text" name="search"
+                               class="form-control bg-dark text-white border-0"
+                               style="border: 2px solid #eb1616;"
+                               placeholder="Cari brand atau model..."
+                               value="{{ request('search') }}">
+                    </div>
+
+                    {{-- Tombol Clear --}}
+                    @if(request('search'))
+                        <a href="{{ route('handphone.index') }}" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    @endif
+                </form>
+
+                {{-- ➕ Tombol Tambah di kanan --}}
+                <a href="{{ route('handphone.create') }}" class="btn btn-danger btn-sm">
+                    <i class="bi bi-plus-circle"></i> Tambah
+                </a>
+            </div>
         </div>
 
+        <!-- 📋 Tabel -->
         <div class="table-responsive">
             <table class="table table-dark align-middle text-center mb-0 table-hover"
                    style="border-collapse: collapse; border: 1px solid #555;">
@@ -64,7 +96,6 @@
                             <td style="border: 1px solid #555;">
                                 <div class="d-flex gap-2 flex-wrap justify-content-center">
                                     @if($handphone->trashed())
-                                        {{-- 🔄 Restore --}}
                                         <form action="{{ route('handphone.restore', $handphone->id) }}" method="POST">
                                             @csrf
                                             @method('PATCH')
@@ -73,8 +104,7 @@
                                             </button>
                                         </form>
 
-                                        {{-- ❌ Hapus Permanen --}}
-                                        <form action="{{ route('handphone.force-delete', $handphone->id) }}" method="POST" 
+                                        <form action="{{ route('handphone.force-delete', $handphone->id) }}" method="POST"
                                               onsubmit="return confirm('Hapus permanen handphone ini?')" class="flex-fill m-0 p-0">
                                             @csrf
                                             @method('DELETE')
@@ -83,17 +113,12 @@
                                             </button>
                                         </form>
                                     @else
-                                        {{-- 👁️ Detail --}}
                                         <a href="{{ route('handphone.show', $handphone->id) }}" class="btn btn-info btn-sm flex-fill">
                                             <i class="bi bi-eye"></i> Detail
                                         </a>
-
-                                        {{-- ✏️ Edit --}}
                                         <a href="{{ route('handphone.edit', $handphone->id) }}" class="btn btn-warning btn-sm flex-fill">
                                             <i class="bi bi-pencil-square"></i> Edit
                                         </a>
-
-                                        {{-- 🗑️ Soft Delete --}}
                                         <form action="{{ route('handphone.destroy', $handphone->id) }}" 
                                               method="POST" 
                                               class="flex-fill m-0 p-0"

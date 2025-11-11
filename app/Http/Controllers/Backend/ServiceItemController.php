@@ -12,9 +12,18 @@ class ServiceItemController extends Controller
     /**
      * Tampilkan semua service item (termasuk yang dihapus).
      */
-    public function index()
+    public function index(Request $request)
     {
-        $serviceitems = ServiceItem::withTrashed()->latest()->get();
+        $search = $request->input('search');
+    
+        $query = ServiceItem::query()->withTrashed()->latest();
+    
+        if ($search) {
+            $query->where('service_name', 'like', "%{$search}%");
+        }
+    
+        $serviceitems = $query->get();
+    
         return view('page.backend.serviceitem.index', compact('serviceitems'));
     }
 
