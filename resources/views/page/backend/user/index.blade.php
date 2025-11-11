@@ -3,13 +3,53 @@
 @section('content')
 <div class="container-fluid pt-4 px-4">
     <div class="bg-secondary text-center rounded p-4 shadow-lg">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <h5 class="mb-0 text-white fw-bold">👤 Tabel User</h5>
-            <a href="{{ route('users.create') }}" class="btn btn-danger btn-sm">
-                <i class="bi bi-plus-circle"></i> Tambah
-            </a>
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+            <h5 class="mb-0 text-white fw-bold">👥 Tabel User</h5>
+
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                {{-- 🔍 Search dan Filter --}}
+                <form action="{{ route('users.index') }}" method="GET" class="d-flex align-items-center gap-2 flex-wrap">
+                    {{-- Input Search --}}
+                    <div class="input-group" style="width: 220px;">
+                        {{-- Tombol Search --}}
+                        <button type="submit" 
+                                class="input-group-text border-0"
+                                style="background-color: #eb1616; cursor: pointer;">
+                            <i class="bi bi-search text-white"></i>
+                        </button>
+                
+                        <input type="text" name="search"
+                               class="form-control bg-dark text-white border-0"
+                               style="border: 2px solid #eb1616;"
+                               placeholder="Cari nama atau email..."
+                               value="{{ request('search') }}">
+                    </div>
+                
+                    {{-- Tombol Clear --}}
+                    @if(request('search') || request('role'))
+                        <a href="{{ route('users.index') }}" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    @endif
+                
+                    {{-- Dropdown Role --}}
+                    <select name="role"
+                            class="form-select bg-dark text-white border-secondary"
+                            onchange="this.form.submit()" style="width: 180px;">
+                        <option value="">Semua Role</option>
+                        <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                        <option value="customer" {{ request('role') == 'customer' ? 'selected' : '' }}>Customer</option>
+                        <option value="technician" {{ request('role') == 'technician' ? 'selected' : '' }}>Technician</option>
+                    </select>
+                </form>
+                {{-- ➕ Tombol Tambah di kanan --}}
+                <a href="{{ route('users.create') }}" class="btn btn-danger btn-sm">
+                    <i class="bi bi-plus-circle"></i> Tambah
+                </a>
+            </div>
         </div>
 
+        {{-- 📋 Tabel User --}}
         <div class="table-responsive">
             <table class="table table-dark align-middle text-center mb-0 table-hover"
                    style="border-collapse: collapse; border: 1px solid #555;">
@@ -72,7 +112,8 @@
                                             </button>
                                         </form>
 
-                                        <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Hapus permanen user ini?')" class="flex-fill m-0 p-0">
+                                        <form action="{{ route('users.destroy', $user->id) }}" method="POST"
+                                              onsubmit="return confirm('Hapus permanen user ini?')" class="flex-fill m-0 p-0">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-sm w-100">
